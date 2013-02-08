@@ -9,7 +9,6 @@ BasePTAProcessor::BasePTAProcessor(SEXP start_, SEXP end_, SEXP score_, SEXP cou
     if (count_bound) {
         error_bounded = false;
     } else {
-        count_bound = size();
         error_bounded = true;
 
         // calculate maximum error

@@ -5,6 +5,10 @@ using namespace std;
 OptimalPTAProcessor::OptimalPTAProcessor(SEXP start_, SEXP end_, SEXP score_, SEXP count_, SEXP error_) :
     BasePTAProcessor(start_, end_, score_, count_, error_)
 {
+    if (error_bounded) {
+        count_bound = size();
+    }
+
     cumulative_sums.resize(size());
     cumulative_sums[0] = length(0) * score[0];
     for (int i = 1; i < size(); ++i) {
