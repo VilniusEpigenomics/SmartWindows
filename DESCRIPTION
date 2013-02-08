@@ -1,11 +1,11 @@
 Package: pta
 Type: Package
-Title: What the package does (short line)
+Title: Parsimonious Temporal Aggregation
 Version: 1.0
 Date: 2013-01-28
-Author: Who wrote it
-Maintainer: Who to complain to <yourfault@somewhere.net>
-Description: More about what it does (maybe more than one line)
-License: What Licence is it under ?
-Depends: Rcpp (>= 0.10.2)
+Author: Kiprianas Spiridonovas
+Maintainer: Kiprianas Spiridonovas <k.spiridonovas@gmail.com>
+Description: Simplifies RangedData while minimising the error.
+License: BSD
+Depends: Rcpp (>= 0.10.2), IRanges
 LinkingTo: Rcpp
