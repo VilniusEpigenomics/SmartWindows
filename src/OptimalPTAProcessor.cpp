@@ -5,14 +5,6 @@ using namespace std;
 OptimalPTAProcessor::OptimalPTAProcessor(SEXP start_, SEXP end_, SEXP score_, SEXP count_, SEXP error_) :
     BasePTAProcessor(start_, end_, score_, count_, error_)
 {
-    minimum_count = 1;
-    for (int i = 0; i < size() - 1; ++i) {
-        if (!adjacent(i, i + 1)) {
-            ++minimum_count;
-            nonadjacencies.push_back(i);
-        }
-    }
-
     cumulative_sums.resize(size());
     cumulative_sums[0] = length(0) * score[0];
     for (int i = 1; i < size(); ++i) {
@@ -32,7 +24,6 @@ OptimalPTAProcessor::OptimalPTAProcessor(SEXP start_, SEXP end_, SEXP score_, SE
     }
 
     errors.assign(2, size(), INFINITY);
-    maximum_error = sse(minimum_count, size() - 1);
 
     backindices.assign(count_bound, size(), -1);
 }

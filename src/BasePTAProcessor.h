@@ -12,6 +12,9 @@ class BasePTAProcessor {
         double error_bound;
         bool error_bounded;
 
+        int minimum_count;
+        double maximum_error;
+
         inline int size() const { return start.size(); }
         double length(int interval) const;
         bool adjacent(int i, int j) const;

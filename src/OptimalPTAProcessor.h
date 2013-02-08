@@ -7,12 +7,8 @@
 
 class OptimalPTAProcessor : public BasePTAProcessor {
     private:
-        int minimum_count;
-        std::vector<int> nonadjacencies;
-
         vector2<double> errors;
         static const int ERRORS_SIZE = 2;
-        double maximum_error;
 
         vector2<int> backindices;
 
