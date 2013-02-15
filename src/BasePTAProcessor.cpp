@@ -14,26 +14,25 @@ BasePTAProcessor::BasePTAProcessor(SEXP start_, SEXP end_, SEXP score_, SEXP cou
         // calculate maximum error
         double score1 = score[0];
         double length1 = length(0);
-        bool first_merge = true;
         int first_i = 0;
         maximum_error = 0;
         minimum_count = 1;
-        for (int i = 1; i < size(); ++i) {
-            if (adjacent(i - 1, i)) {
+        for (int i = 1; i <= size(); ++i) {
+            if (adjacent(i - 1, i) && (i < size())) {
                 score1 = (length1 * score1 + length(i) * score[i])
                     / (length1 + length(i));
                 length1 += length(i);
-                maximum_error += pow(length1 * score1 - length(i) * score[i], 2);
-                if (first_merge) {
-                    maximum_error += pow(length1 * score1 - length(first_i) * score[first_i], 2);
-                    first_merge = false;
-                }
             } else {
-                score1 = score[i];
-                length1 = length(i);
-                first_merge = true;
-                first_i = i;
-                ++minimum_count;
+                for (int j = first_i; j < i; ++j) {
+                    maximum_error += pow(length1 * score1 - length(j) * score[j], 2);
+                }
+
+                if (i < size()) {
+                    score1 = score[i];
+                    length1 = length(i);
+                    first_i = i;
+                    ++minimum_count;
+                }
             }
         }
     }
