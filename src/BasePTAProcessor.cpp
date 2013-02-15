@@ -51,7 +51,8 @@ double BasePTAProcessor::length(int interval) const {
 }
 
 bool BasePTAProcessor::adjacent(int i, int j) const {
-    return start[j] - end[i] <= adjacency_treshold;
+    double distance = start[j] - end[i];
+    return (distance >= 0) && (distance <= adjacency_treshold);
 }
 
 double BasePTAProcessor::merged_score(int i, int j) const {
