@@ -1,11 +1,12 @@
 #include "BasePTAProcessor.h"
 using namespace Rcpp;
 
-BasePTAProcessor::BasePTAProcessor(SEXP start_, SEXP end_, SEXP score_, SEXP count_, SEXP error_)
+BasePTAProcessor::BasePTAProcessor(SEXP start_, SEXP end_, SEXP score_, SEXP count_, SEXP error_, SEXP adjacency_treshold_)
     : start(start_), end(end_), score(score_)
 {
     count_bound = as<int>(count_);
     error_bound = as<double>(error_);
+    adjacency_treshold = as<double>(adjacency_treshold_);
     if (count_bound) {
         error_bounded = false;
     } else {
@@ -50,7 +51,7 @@ double BasePTAProcessor::length(int interval) const {
 }
 
 bool BasePTAProcessor::adjacent(int i, int j) const {
-    return end[i] + 1 == start[j];
+    return start[j] - end[i] <= adjacency_treshold;
 }
 
 double BasePTAProcessor::merged_score(int i, int j) const {

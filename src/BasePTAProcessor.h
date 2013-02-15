@@ -11,6 +11,7 @@ class BasePTAProcessor {
         int count_bound;
         double error_bound;
         bool error_bounded;
+        double adjacency_treshold;
 
         int minimum_count;
         double maximum_error;
@@ -21,7 +22,7 @@ class BasePTAProcessor {
         double merged_score(int i, int j) const;
 
     public:
-        BasePTAProcessor(SEXP start_, SEXP end_, SEXP score_, SEXP count_, SEXP error_);
+        BasePTAProcessor(SEXP start_, SEXP end_, SEXP score_, SEXP count_, SEXP error_, SEXP adjacency_treshold_);
         Rcpp::List get_result() const;
 };
 

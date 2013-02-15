@@ -130,8 +130,8 @@ bool GreedyPTAProcessor::merge() {
     return true;
 }
 
-GreedyPTAProcessor::GreedyPTAProcessor(SEXP start_, SEXP end_, SEXP score_, SEXP count_, SEXP error_) :
-    BasePTAProcessor(start_, end_, score_, count_, error_),
+GreedyPTAProcessor::GreedyPTAProcessor(SEXP start_, SEXP end_, SEXP score_, SEXP count_, SEXP error_, SEXP adjacency_treshold_) :
+    BasePTAProcessor(start_, end_, score_, count_, error_, adjacency_treshold_),
     greater(*this)
 {
     node_count = size();

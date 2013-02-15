@@ -21,7 +21,7 @@ class OptimalPTAProcessor : public BasePTAProcessor {
         double sse(int from, int to) const;
 
     public:
-        OptimalPTAProcessor(SEXP start_, SEXP end_, SEXP score_, SEXP count_, SEXP error_);
+        OptimalPTAProcessor(SEXP start_, SEXP end_, SEXP score_, SEXP count_, SEXP error_, SEXP adjacency_treshold_);
         void run();
 };
 

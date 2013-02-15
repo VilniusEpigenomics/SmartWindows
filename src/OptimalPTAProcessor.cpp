@@ -2,8 +2,8 @@
 using namespace Rcpp;
 using namespace std;
 
-OptimalPTAProcessor::OptimalPTAProcessor(SEXP start_, SEXP end_, SEXP score_, SEXP count_, SEXP error_) :
-    BasePTAProcessor(start_, end_, score_, count_, error_)
+OptimalPTAProcessor::OptimalPTAProcessor(SEXP start_, SEXP end_, SEXP score_, SEXP count_, SEXP error_, SEXP adjacency_treshold_) :
+    BasePTAProcessor(start_, end_, score_, count_, error_, adjacency_treshold_)
 {
     if (error_bounded) {
         count_bound = size();

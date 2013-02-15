@@ -46,7 +46,7 @@ class GreedyPTAProcessor : public BasePTAProcessor {
         bool merge();
 
     public:
-        GreedyPTAProcessor(SEXP start_, SEXP end_, SEXP score_, SEXP count_, SEXP error_);
+        GreedyPTAProcessor(SEXP start_, SEXP end_, SEXP score_, SEXP count_, SEXP error_, SEXP adjacency_treshold_);
         void run();
 };
 
