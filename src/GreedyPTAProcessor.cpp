@@ -165,13 +165,18 @@ double GreedyPTAProcessor::dsim(int i, int j) const {
 }
 
 void GreedyPTAProcessor::run() {
-    double single_abs_error_bound = error_bound * maximum_error / size();
+    double abs_error_bound = error_bound * maximum_error;
+    double cumulative_error = 0;
     while (node_count > count_bound) {
+        if (size() > 1) {
+            cumulative_error += key(peek());
+        }
+
         if (!merge()) {
             break;
         }
 
-        if (key(peek()) > single_abs_error_bound) {
+        if (cumulative_error > abs_error_bound) {
             break;
         }
     }
