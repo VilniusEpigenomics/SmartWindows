@@ -168,17 +168,17 @@ void GreedyPTAProcessor::run() {
     double abs_error_bound = error_bound * maximum_error;
     double cumulative_error = 0;
     while (node_count > count_bound) {
-        if (size() > 1) {
-            cumulative_error += key(peek());
+        double next_error = key(peek());
+
+        if (cumulative_error + next_error > abs_error_bound) {
+            break;
         }
 
         if (!merge()) {
             break;
         }
 
-        if (cumulative_error > abs_error_bound) {
-            break;
-        }
+        cumulative_error += next_error;
     }
 
     NumericVector newstart(node_count);
