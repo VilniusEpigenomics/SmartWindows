@@ -25,7 +25,7 @@ BasePTAProcessor::BasePTAProcessor(SEXP start_, SEXP end_, SEXP score_, SEXP cou
                 length1 += length(i);
             } else {
                 for (int j = first_i; j < i; ++j) {
-                    maximum_error += pow(length1 * score1 - length(j) * score[j], 2);
+                    maximum_error += length(j) * pow(score1 - score[j], 2);
                 }
 
                 if (i < size()) {
