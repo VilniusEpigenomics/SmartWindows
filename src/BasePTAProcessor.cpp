@@ -20,7 +20,7 @@ BasePTAProcessor::BasePTAProcessor(SEXP start_, SEXP end_, SEXP score_, SEXP cou
         maximum_error = 0;
         minimum_count = 1;
         for (int i = 1; i <= size(); ++i) {
-            if (adjacent(i - 1, i) && (i < size())) {
+            if ((i < size()) && adjacent(i - 1, i)) {
                 score1 = (length1 * score1 + length(i) * score[i])
                     / (length1 + length(i));
                 length1 += length(i);
