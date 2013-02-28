@@ -1,3 +1,4 @@
+#include <algorithm>
 #include "BasePTAProcessor.h"
 using namespace Rcpp;
 
@@ -51,6 +52,14 @@ double BasePTAProcessor::length(int interval) const {
 }
 
 bool BasePTAProcessor::adjacent(int i, int j) const {
+    if (i == j) {
+        return true;
+    }
+
+    if (i > j) {
+        std::swap(i, j);
+    }
+
     double distance = start[j] - end[i];
     if (distance < 0) {
         stop("Intervals should be sorted and non-overlapping.");
