@@ -7,7 +7,7 @@ BasePTAProcessor::BasePTAProcessor(SEXP start_, SEXP end_, SEXP score_, SEXP cou
     count_bound = as<int>(count_);
     error_bound = as<double>(error_);
     adjacency_treshold = as<double>(adjacency_treshold_);
-    if (count_bound) {
+    if (count_bound > 1) {
         error_bounded = false;
     } else {
         error_bounded = true;
