@@ -32,9 +32,9 @@ class GreedyPTAProcessor : public BasePTAProcessor {
         double dsim(int i, int j) const;
         double key(int nodeid) const;
 
-        int parent(int i);
-        int left_child(int i);
-        int right_child(int i);
+        int parent(int i) const;
+        int left_child(int i) const;
+        int right_child(int i) const;
         void heap_swap(int i, int j);
         void heap_up(int i);
         void heap_down(int i);

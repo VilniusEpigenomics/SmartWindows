@@ -16,15 +16,15 @@ double GreedyPTAProcessor::key(int nodeid) const {
     }
 }
 
-int GreedyPTAProcessor::parent(int i) {
+int GreedyPTAProcessor::parent(int i) const {
     return (i - 1)/2;
 }
 
-int GreedyPTAProcessor::left_child(int i) {
+int GreedyPTAProcessor::left_child(int i) const {
     return 2 * i + 1;
 }
 
-int GreedyPTAProcessor::right_child(int i) {
+int GreedyPTAProcessor::right_child(int i) const {
     return 2 * i + 2;
 }
 
