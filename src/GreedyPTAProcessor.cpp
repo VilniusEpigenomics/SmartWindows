@@ -89,27 +89,30 @@ void GreedyPTAProcessor::heap_insert(int nodeid) {
 void GreedyPTAProcessor::update_node(int nodeid) {
     if (nodeid == -1) return;
     Node& node = nodes[nodeid];
-    node.key = key(node.id);
+    assert(is_heap(heap.begin(), heap.end(), greater));
     heap_delete(node.position);
+    assert(is_heap(heap.begin(), heap.end(), greater));
+    node.key = key(node.id);
     heap_insert(node.id);
+    assert(is_heap(heap.begin(), heap.end(), greater));
 }
 
 bool GreedyPTAProcessor::merge() {
-    assert(is_heap(heap.begin(), heap.end(), greater));
     if (heap.size() <= 1) return false;
     int topid = peek();
     const Node& top = nodes[topid];
-    Node& prev = nodes[top.prev];
     if (top.key == INFINITY) return false;
+    Node& prev = nodes[top.prev];
 
     heap_delete(0);
+    assert(is_heap(heap.begin(), heap.end(), greater));
     --node_count;
 
     score[prev.id] = merged_score(prev.id, topid);
     end[prev.id] = end[topid];
     prev.next = top.next;
 
-    if (top.next != -1) {
+    if (prev.next != -1) {
         nodes[prev.next].prev = prev.id;
     }
 
