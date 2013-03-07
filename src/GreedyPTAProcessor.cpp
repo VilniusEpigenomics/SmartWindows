@@ -86,22 +86,12 @@ void GreedyPTAProcessor::heap_insert(int nodeid) {
     heap_up(i);
 }
 
-void GreedyPTAProcessor::erase_node(int nodeid) {
-    const Node& node = nodes[nodeid];
-
-    if (nodeid == first_node) {
-        first_node = node.next;
-    } else {
-        nodes[node.prev].next = node.next;
-    }
-
-    if (nodeid == last_node) {
-        last_node = node.prev;
-    } else {
-        nodes[node.next].prev = node.prev;
-    }
-
-    --node_count;
+void GreedyPTAProcessor::update_node(int nodeid) {
+    if (nodeid == -1) return;
+    Node& node = nodes[nodeid];
+    node.key = key(node.id);
+    heap_delete(node.position);
+    heap_insert(node.id);
 }
 
 bool GreedyPTAProcessor::merge() {
@@ -109,23 +99,22 @@ bool GreedyPTAProcessor::merge() {
     if (heap.size() <= 1) return false;
     int topid = peek();
     const Node& top = nodes[topid];
+    Node& prev = nodes[top.prev];
     if (top.key == INFINITY) return false;
 
-    score[top.prev] = merged_score(top.prev, topid);
-    end[top.prev] = end[topid];
     heap_delete(0);
-    assert(is_heap(heap.begin(), heap.end(), greater));
-    erase_node(topid);
+    --node_count;
+
+    score[prev.id] = merged_score(prev.id, topid);
+    end[prev.id] = end[topid];
+    prev.next = top.next;
 
     if (top.next != -1) {
-        Node& next = nodes[top.next];
-        next.key = key(next.id);
-        heap_delete(next.position);
-        assert(is_heap(heap.begin(), heap.end(), greater));
-        heap_insert(next.id);
-        assert(is_heap(heap.begin(), heap.end(), greater));
+        nodes[prev.next].prev = prev.id;
     }
 
+    update_node(prev.id);
+    update_node(prev.next);
 
     return true;
 }

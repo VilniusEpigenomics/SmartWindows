@@ -42,7 +42,7 @@ class GreedyPTAProcessor : public BasePTAProcessor {
         void heap_insert(int nodeid);
 
         int peek() const;
-        void erase_node(int nodeid);
+        void update_node(int nodeid);
         bool merge();
 
     public:
