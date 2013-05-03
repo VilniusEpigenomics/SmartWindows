@@ -10,3 +10,8 @@ gPTA <- function(data, count=1, error=Inf, adjacency.treshold=1){
     RangedData(IRanges(start=result$start, end=result$end), score=result$score)
 }
 
+multiPTA <- function(data, count=1, error=Inf, adjacency.treshold=1, skip=3){
+    result <- .Call("multiPTA", start(data), end(data), score(data), count, error, adjacency.treshold, skip, PACKAGE = "pta")
+    RangedData(IRanges(start=result$start, end=result$end), score=result$score)
+}
+
