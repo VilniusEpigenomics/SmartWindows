@@ -1,11 +1,13 @@
-#ifndef pta_MultiPTAProcessor_h
-#define pta_MultiPTAProcessor_h
+#ifndef pta_PTAProcessor_h
+#define pta_PTAProcessor_h
 #include <Rcpp.h>
 #include <vector>
 #include <cassert>
-#include "BasePTAProcessor.h"
 
-class MultiPTAProcessor : public BasePTAProcessor {
+#define PTA_MODE_NORMAL 0
+#define PTA_MODE_CORRELATION 1
+
+class PTAProcessor {
     private:
         struct Node {
             int prev;
@@ -17,10 +19,10 @@ class MultiPTAProcessor : public BasePTAProcessor {
         };
 
         struct NodeGreater {
-            const MultiPTAProcessor* processor;
+            const PTAProcessor* processor;
             int heap;
             NodeGreater() : processor(NULL), heap(-1) {}
-            void set(const MultiPTAProcessor* p, int h) {
+            void set(const PTAProcessor* p, int h) {
                 processor = p;
                 heap = h;
             }
@@ -29,6 +31,25 @@ class MultiPTAProcessor : public BasePTAProcessor {
                 return processor->nodes[a].keys[heap] > processor->nodes[b].keys[heap];
             }
         };
+
+        Rcpp::NumericVector start;
+        Rcpp::NumericVector end;
+        Rcpp::NumericMatrix scores;
+
+        int count_bound;
+        double error_bound;
+        bool error_bounded;
+        double adjacency_treshold;
+
+        int minimum_count;
+        double maximum_error;
+
+        int mode;
+
+        inline int size() const { return start.size(); }
+        double length(int interval) const;
+        bool adjacent(int i, int j) const;
+        Rcpp::NumericVector merged_scores(int i, int j) const;
 
         std::vector<NodeGreater> greaters;
         int nheaps;
@@ -55,8 +76,9 @@ class MultiPTAProcessor : public BasePTAProcessor {
         bool merge(int heap, int node);
 
     public:
-        MultiPTAProcessor(SEXP start_, SEXP end_, SEXP score_, SEXP count_, SEXP error_, SEXP adjacency_treshold_, SEXP skip_);
+        PTAProcessor(SEXP start_, SEXP end_, SEXP scores_, SEXP count_, SEXP error_, SEXP adjacency_treshold_, SEXP skip_, SEXP mode_);
         void run();
+        Rcpp::List get_result() const;
 };
 
 #endif

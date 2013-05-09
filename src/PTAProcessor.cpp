@@ -1,6 +1,6 @@
 #include <algorithm>
 #include <cassert>
-#include "MultiPTAProcessor.h"
+#include "PTAProcessor.h"
 using namespace Rcpp;
 using namespace std;
 
@@ -14,7 +14,41 @@ using namespace std;
         assert(is_heap(heaps[__CHECK_HEAP_heap].begin(), heaps[__CHECK_HEAP_heap].end(), greaters[__CHECK_HEAP_heap]));
 #endif
 
-double MultiPTAProcessor::key(int heap, int nodeid) const {
+List PTAProcessor::get_result() const {
+    return List::create(
+            Named("start") = start,
+            Named("end") = end,
+            Named("scores") = scores);
+}
+
+double PTAProcessor::length(int interval) const {
+    return end[interval] - start[interval] + 1;
+}
+
+bool PTAProcessor::adjacent(int i, int j) const {
+    if (i == j) {
+        return true;
+    }
+
+    if (i > j) {
+        std::swap(i, j);
+    }
+
+    double distance = start[j] - end[i];
+    if (distance < 0) {
+        stop("Intervals should be sorted and non-overlapping.");
+    }
+    return distance <= adjacency_treshold;
+}
+
+NumericVector PTAProcessor::merged_scores(int i, int j) const {
+    NumericVector scores_i = const_cast<PTAProcessor*>(this)->scores(i, _);
+    NumericVector scores_j = const_cast<PTAProcessor*>(this)->scores(j, _);
+    return (length(i) * scores_i + length(j) * scores_j)
+         / (length(i) + length(j));
+}
+
+double PTAProcessor::key(int heap, int nodeid) const {
     int previd = nodeid;
     for (int i = -1; i < heap; ++i) {
         if (previd == first_node) return INFINITY;
@@ -23,25 +57,25 @@ double MultiPTAProcessor::key(int heap, int nodeid) const {
     return dsim(previd, nodeid);
 }
 
-int MultiPTAProcessor::parent(int i) const {
+int PTAProcessor::parent(int i) const {
     return (i - 1)/2;
 }
 
-int MultiPTAProcessor::left_child(int i) const {
+int PTAProcessor::left_child(int i) const {
     return 2 * i + 1;
 }
 
-int MultiPTAProcessor::right_child(int i) const {
+int PTAProcessor::right_child(int i) const {
     return 2 * i + 2;
 }
 
-void MultiPTAProcessor::heap_swap(int heap, int i, int j) {
+void PTAProcessor::heap_swap(int heap, int i, int j) {
     swap(heaps[heap][i], heaps[heap][j]);
     nodes[heaps[heap][i]].positions[heap] = i;
     nodes[heaps[heap][j]].positions[heap] = j;
 }
 
-void MultiPTAProcessor::heap_up(int heap, int i) {
+void PTAProcessor::heap_up(int heap, int i) {
     while (i > 0) {
         int par = parent(i);
         if (greaters[heap](heaps[heap][par], heaps[heap][i])) {
@@ -53,7 +87,7 @@ void MultiPTAProcessor::heap_up(int heap, int i) {
     }
 }
 
-void MultiPTAProcessor::heap_down(int heap, int i) {
+void PTAProcessor::heap_down(int heap, int i) {
     while (true) {
         int smallest = i;
         int right = right_child(i);
@@ -74,7 +108,7 @@ void MultiPTAProcessor::heap_down(int heap, int i) {
     }
 }
 
-void MultiPTAProcessor::heap_delete(int heap, int i) {
+void PTAProcessor::heap_delete(int heap, int i) {
     heaps[heap][i] = heaps[heap].back();
     nodes[heaps[heap][i]].positions[heap] = i;
     heaps[heap].pop_back();
@@ -86,14 +120,14 @@ void MultiPTAProcessor::heap_delete(int heap, int i) {
     }
 }
 
-void MultiPTAProcessor::heap_insert(int heap, int nodeid) {
+void PTAProcessor::heap_insert(int heap, int nodeid) {
     heaps[heap].push_back(nodeid);
     int i = heaps[heap].size() - 1;
     nodes[nodeid].positions[heap] = i;
     heap_up(heap, i);
 }
 
-void MultiPTAProcessor::update_node(int nodeid) {
+void PTAProcessor::update_node(int nodeid) {
     if (nodeid == -1) return;
     Node& node = nodes[nodeid];
     FOR_EACH_HEAP(heap) {
@@ -103,7 +137,7 @@ void MultiPTAProcessor::update_node(int nodeid) {
     }
 }
 
-bool MultiPTAProcessor::merge(int minheap, int minnode) {
+bool PTAProcessor::merge(int minheap, int minnode) {
     const Node& top = nodes[minnode];
     if (top.keys[minheap] == INFINITY) return false;
 
@@ -121,7 +155,7 @@ bool MultiPTAProcessor::merge(int minheap, int minnode) {
     node_count -= minheap + 1;
     Node& repl = nodes[nodeid]; // replacement
 
-    score[repl.id] = merged_score(repl.id, minnode);
+    scores(repl.id, _) = merged_scores(repl.id, minnode);
     end[repl.id] = end[minnode];
     repl.next = top.next;
     if (repl.next != -1) nodes[repl.next].prev = repl.id;
@@ -138,10 +172,64 @@ bool MultiPTAProcessor::merge(int minheap, int minnode) {
     return true;
 }
 
-MultiPTAProcessor::MultiPTAProcessor(SEXP start_, SEXP end_, SEXP score_, SEXP count_, SEXP error_, SEXP adjacency_treshold_, SEXP skip_) :
-    BasePTAProcessor(start_, end_, score_, count_, error_, adjacency_treshold_)
+inline double sum_sq(const NumericVector x) {
+    double sum = 0.0;
+    for (int i = 0; i < x.size(); ++i) {
+        double x_i = x[i];
+        sum += x_i * x_i;
+    }
+    return sum;
+}
+
+PTAProcessor::PTAProcessor(
+        SEXP start_,
+        SEXP end_,
+        SEXP scores_,
+        SEXP count_,
+        SEXP error_,
+        SEXP adjacency_treshold_,
+        SEXP skip_,
+        SEXP mode_)
+    : start(start_), end(end_), scores(scores_)
 {
-    nheaps = as<int>(skip_);
+    count_bound = as<int>(count_);
+    error_bound = as<double>(error_);
+    adjacency_treshold = as<double>(adjacency_treshold_);
+    if (count_bound > 1) {
+        error_bounded = false;
+    } else {
+        error_bounded = true;
+
+        // calculate maximum error
+        NumericVector score1 = scores(0, _);
+        double length1 = length(0);
+        int first_i = 0;
+        maximum_error = 0;
+        minimum_count = 1;
+        for (int i = 1; i <= size(); ++i) {
+            if ((i < size()) && adjacent(i - 1, i)) {
+                score1 = (length1 * score1 + length(i) * scores(i, _))
+                    / (length1 + length(i));
+                length1 += length(i);
+            } else {
+                for (int j = first_i; j < i; ++j) {
+                    NumericVector diff = score1 - scores(j, _);
+                    maximum_error += length(j) * sum_sq(diff);
+                }
+
+                if (i < size()) {
+                    score1 = scores(i, _);
+                    length1 = length(i);
+                    first_i = i;
+                    ++minimum_count;
+                }
+            }
+        }
+    }
+
+    mode = as<int>(mode_);
+
+    nheaps = as<int>(skip_) + 1;
     node_count = size();
     nodes.resize(node_count);
     heaps.resize(nheaps);
@@ -173,16 +261,18 @@ MultiPTAProcessor::MultiPTAProcessor(SEXP start_, SEXP end_, SEXP score_, SEXP c
     }
 }
 
-double MultiPTAProcessor::dsim(int i, int j) const {
+double PTAProcessor::dsim(int i, int j) const {
     if (adjacent(i, j)) {
-        const double z = merged_score(i, j);
-        return length(i) * pow(z - score[i], 2) + length(j) * pow(z - score[j], 2);
+        const NumericVector z = merged_scores(i, j);
+        NumericVector diff_i = z - const_cast<PTAProcessor *>(this)->scores(i, _);
+        NumericVector diff_j = z - const_cast<PTAProcessor *>(this)->scores(j, _);
+        return length(i) * sum_sq(diff_i) + length(j) * sum_sq(diff_j);
     } else {
         return INFINITY;
     }
 }
 
-void MultiPTAProcessor::run() {
+void PTAProcessor::run() {
     double abs_error_bound = error_bound * maximum_error;
     double cumulative_error = 0;
     while (node_count > count_bound) {
@@ -210,18 +300,18 @@ void MultiPTAProcessor::run() {
 
     NumericVector newstart(node_count);
     NumericVector newend(node_count);
-    NumericVector newscore(node_count);
+    NumericMatrix newscores(node_count, scores.ncol());
     int nodeid = first_node;
     int i = 0;
     while (nodeid >= 0) {
         newstart[i] = start[nodeid];
         newend[i] = end[nodeid];
-        newscore[i] = score[nodeid];
+        newscores(i, _) = scores(nodeid, _);
         nodeid = nodes[nodeid].next;
         ++i;
     }
 
     start = newstart;
     end = newend;
-    score = newscore;
+    scores = newscores;
 }
