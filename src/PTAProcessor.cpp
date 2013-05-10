@@ -36,7 +36,7 @@ bool PTAProcessor::adjacent(int i, int j) const {
 
     double distance = start[j] - end[i];
     if (distance < 0) {
-        stop("Intervals should be sorted and non-overlapping.");
+        throw Rcpp::exception("Intervals should be sorted and non-overlapping.");
     }
     return distance <= adjacency_treshold;
 }
@@ -64,7 +64,7 @@ double PTAProcessor::key(int heap, int nodeid) const {
                 return cor == 0 ? INFINITY : 1 / abs(cor);
             }
         default:
-            stop("Bad PTA mode.");
+            throw Rcpp::exception("Bad PTA mode.");
     }
 }
 
@@ -327,7 +327,6 @@ void PTAProcessor::run() {
            if (1 / minkey <= correlation_bound) {
                break;
            }
-           Rprintf("Correlation: %f\n", 1/minkey);
         } else {
             if (cumulative_error + minkey > abs_error_bound) {
                 break;
