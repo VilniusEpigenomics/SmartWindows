@@ -28,7 +28,7 @@ PTA <- function(data, count=1, error=Inf, adjacency.treshold=1, skip=0, space=1,
     result <- .Call("PTA",
                     d.start, d.end, d.scores,
                     count, error, adjacency.treshold, skip, mode.int, correlation.bound,
-                    PACKAGE="pta")
+                    PACKAGE="PTA")
 
     colnames(result$scores) <- colnames(d.scores)
 

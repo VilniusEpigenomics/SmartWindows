@@ -1,5 +1,5 @@
-#ifndef pta_pta_h
-#define pta_pta_h
+#ifndef PTA_PTA_h
+#define PTA_PTA_h
 
 #include <Rcpp.h>
 

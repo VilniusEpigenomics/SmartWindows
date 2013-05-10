@@ -1,6 +1,6 @@
-\name{pta-package}
-\alias{pta-package}
-\alias{pta}
+\name{PTA-package}
+\alias{PTA-package}
+\alias{PTA}
 \docType{package}
 \title{
 What the package does (short line)
@@ -11,7 +11,7 @@ More about what it does (maybe more than one line)
 }
 \details{
 \tabular{ll}{
-Package: \tab pta\cr
+Package: \tab PTA\cr
 Type: \tab Package\cr
 Version: \tab 1.0\cr
 Date: \tab 2013-01-28\cr

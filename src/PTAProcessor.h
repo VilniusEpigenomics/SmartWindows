@@ -1,5 +1,5 @@
-#ifndef pta_PTAProcessor_h
-#define pta_PTAProcessor_h
+#ifndef PTA_PTAProcessor_h
+#define PTA_PTAProcessor_h
 #include <Rcpp.h>
 #include <vector>
 #include <cassert>

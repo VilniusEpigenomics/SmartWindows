@@ -1,4 +1,4 @@
-#include "pta.h"
+#include "PTA.h"
 #include "PTAProcessor.h"
 using namespace Rcpp;
 using namespace std;

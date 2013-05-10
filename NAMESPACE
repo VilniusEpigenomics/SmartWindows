@@ -1,2 +1,2 @@
-useDynLib(pta)
+useDynLib(PTA)
 exportPattern("^[[:alpha:]]+")
