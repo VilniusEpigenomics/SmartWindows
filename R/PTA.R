@@ -54,3 +54,14 @@ PTA.raw <- function(start, end, scores,
 
     result
 }
+
+deoverlap <- function(x) {
+    result <- deoverlap.raw(start(x), end(x))
+    start(x) <- result$start
+    end(x) <- result$end
+    x
+}
+
+deoverlap.raw <- function(start, end) {
+    .Call("deoverlap", start, end)
+}
