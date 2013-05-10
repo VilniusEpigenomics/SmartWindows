@@ -45,6 +45,18 @@ PTA.raw <- function(start, end, scores,
     mode <- match.arg(mode)
     mode.int <- switch(mode, normal=0, correlation=1)
 
+    if (is.vector(scores)) {
+        scores <- matrix(scores)
+    }
+
+    if (length(start) != length(end)) {
+        stop("Start and end counts differ.")
+    }
+
+    if (length(start) != nrow(scores)) {
+        stop("Range and score counts differ")
+    }
+
     result <- .Call("PTA",
                     start, end, scores,
                     count.bound, error.bound, adjacency.treshold, skip, mode.int, correlation.bound,
