@@ -194,8 +194,9 @@ PTAProcessor::PTAProcessor(
         SEXP adjacency_treshold_,
         SEXP skip_,
         SEXP mode_,
-        SEXP correlation_bound_)
-    : start(start_), end(end_), scores(scores_)
+        SEXP correlation_bound_,
+        SEXP correlation_spearman_)
+    : rank("rank"), start(start_), end(end_), scores(scores_)
 {
     mode = as<int>(mode_);
 
@@ -207,6 +208,7 @@ PTAProcessor::PTAProcessor(
     } else if (mode == PTA_MODE_CORRELATION) {
         maximum_error = INFINITY;
         correlation_bound = as<double>(correlation_bound_);
+        correlation_spearman = as<int>(correlation_spearman_);
     } else {
         // calculate maximum error
         NumericVector score1 = scores(0, _);
@@ -282,6 +284,11 @@ double PTAProcessor::correlation(int x, int y) const {
     NumericVector scores_x = const_cast<PTAProcessor *>(this)->scores(x, _);
     NumericVector scores_y = const_cast<PTAProcessor *>(this)->scores(y, _);
     int n = scores_x.size();
+
+    if (correlation_spearman) {
+        scores_x = rank(scores_x);
+        scores_y = rank(scores_y);
+    }
 
     double mean_x = accumulate(scores_x.begin(), scores_x.end(), 0.0) / n;
     double mean_y = accumulate(scores_y.begin(), scores_y.end(), 0.0) / n;

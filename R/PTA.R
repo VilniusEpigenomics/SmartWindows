@@ -41,7 +41,8 @@ PTA <- function(data, space=1, ...) {
 }
 
 PTA.raw <- function(start, end, scores,
-                    count.bound=1, error.bound=Inf, adjacency.treshold=1, skip=0, mode=c("normal", "correlation"), correlation.bound=0) {
+                    count.bound=1, error.bound=Inf, adjacency.treshold=1, skip=0, mode=c("normal", "correlation"),
+                    correlation.bound=0, correlation.spearman=FALSE) {
     mode <- match.arg(mode)
     mode.int <- switch(mode, normal=0, correlation=1)
 
@@ -59,7 +60,8 @@ PTA.raw <- function(start, end, scores,
 
     result <- .Call("PTA",
                     start, end, scores,
-                    count.bound, error.bound, adjacency.treshold, skip, mode.int, correlation.bound,
+                    count.bound, error.bound, adjacency.treshold, skip, mode.int,
+                    correlation.bound, correlation.spearman,
                     PACKAGE="PTA")
 
     colnames(result$scores) <- colnames(scores)

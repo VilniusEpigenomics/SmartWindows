@@ -21,6 +21,11 @@ test_that("correlation mode works", {
     expect_true(nrow(p) < nrow(d))
 })
 
+test_that("spearman correlation works", {
+    p <- PTA(d, adjacency.treshold=10, mode="correlation", correlation.bound=0.8, correlation.spearman=TRUE)
+    expect_true(nrow(p) < nrow(d))
+})
+
 test_that("PTA.raw works", {
     p <- PTA.raw(1:10, 1:10+1, 1:10)
     expect_true(nrow(p$scores) == 1)

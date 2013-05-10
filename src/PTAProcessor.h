@@ -32,6 +32,8 @@ class PTAProcessor {
             }
         };
 
+        Rcpp::Function rank;
+
         Rcpp::NumericVector start;
         Rcpp::NumericVector end;
         Rcpp::NumericMatrix scores;
@@ -40,6 +42,7 @@ class PTAProcessor {
         double error_bound;
         double adjacency_treshold;
         double correlation_bound;
+        bool correlation_spearman;
 
         int minimum_count;
         double maximum_error;
@@ -79,7 +82,7 @@ class PTAProcessor {
     public:
         PTAProcessor(SEXP start_, SEXP end_, SEXP scores_, SEXP count_bound_, SEXP error_bound_,
                 SEXP adjacency_treshold_, SEXP skip_, SEXP mode_,
-                SEXP correlation_bound_);
+                SEXP correlation_bound_, SEXP correlation_spearman_);
         Rcpp::List run();
 };
 

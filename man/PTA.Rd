@@ -8,7 +8,7 @@
 PTA(data, space=1, ...)
 PTA.raw(start, stop, scores, count.bound=1, error.bound=Inf,
         adjacency.treshold=1, skip=0, mode=c("normal", "correlation"),
-        correlation.bound=0)
+        correlation.bound=0, correlation.spearman=FALSE)
 }
 \arguments{
     \item{data}{either a RangedData or GRanges instance with the data to be
@@ -31,6 +31,7 @@ level, expressed as a fraction of maximum merge error for the given data. Only
 used when mode='normal'}
     \item{correlation.bound}{stop processing when the maximum correlation
 between nodes considered for merging is lower than this number.}
+    \item{correlation.spearman}{use Spearman correlation.}
 }
 \value{
 \code{PTA} returns either RangedData or GRanges, depending on what was passed,
