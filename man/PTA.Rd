@@ -6,7 +6,9 @@
 \description{Parsimonious temporal aggregation}
 \usage{
 PTA(data, space=1, ...)
-PTA.raw(start, stop, scores, ...)
+PTA.raw(start, stop, scores, count.bound=1, error.bound=Inf,
+        adjacency.treshold=1, skip=0, mode=c("normal", "correlation"),
+        correlation.bound=0)
 }
 \arguments{
     \item{data}{either a RangedData or GRanges instance with the data to be
@@ -37,7 +39,7 @@ containing processed data and only the space given with \code{space}.
 \code{scores} which contain processed data.
 }
 \seealso{
-\link[PTA:PTA-package]{PTA-package}
+\link[PTA]{PTA-package}
 }
 \examples{
 library(GenomicRanges)

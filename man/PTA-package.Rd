@@ -1,5 +1,6 @@
 \name{PTA-package}
 \alias{PTA-package}
+\encoding{UTF-8}
 \docType{package}
 \title{
 Parsimonious temporal aggregation
@@ -30,8 +31,7 @@ Gordevičius, Juozas, Johann Gamper, and Michael Böhlen. "Parsimonious temporal
 }
 \keyword{ package }
 \seealso{
-\link[IRanges:IRanges-package]{IRanges},
-\link[GenomicRanges:GenomicRanges-package]{GenomicRanges}
+\link{IRanges}, \link{GenomicRanges}
 }
 \examples{
 set.seed(123)
