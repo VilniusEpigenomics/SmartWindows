@@ -77,7 +77,7 @@ class PTAProcessor {
         bool merge(int heap, int node);
 
     public:
-        PTAProcessor(SEXP start_, SEXP end_, SEXP scores_, SEXP count_, SEXP error_bound_,
+        PTAProcessor(SEXP start_, SEXP end_, SEXP scores_, SEXP count_bound_, SEXP error_bound_,
                 SEXP adjacency_treshold_, SEXP skip_, SEXP mode_,
                 SEXP correlation_bound_);
         Rcpp::List run();

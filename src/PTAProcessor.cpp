@@ -189,7 +189,7 @@ PTAProcessor::PTAProcessor(
         SEXP start_,
         SEXP end_,
         SEXP scores_,
-        SEXP count_,
+        SEXP count_bound_,
         SEXP error_bound_,
         SEXP adjacency_treshold_,
         SEXP skip_,
@@ -199,7 +199,7 @@ PTAProcessor::PTAProcessor(
 {
     mode = as<int>(mode_);
 
-    count_bound = as<int>(count_);
+    count_bound = as<int>(count_bound_);
     error_bound = as<double>(error_bound_);
     adjacency_treshold = as<double>(adjacency_treshold_);
     if (count_bound > 1) {
