@@ -1,13 +1,11 @@
 \name{PTA-package}
 \alias{PTA-package}
-\alias{PTA}
 \docType{package}
 \title{
-What the package does (short line)
+Parsimonious temporal aggregation
 }
 \description{
-More about what it does (maybe more than one line)
-~~ A concise (1-5 lines) description of the package ~~
+Efficiently perform aggregation on ranged data based on various metrics.
 }
 \details{
 \tabular{ll}{
@@ -15,26 +13,28 @@ Package: \tab PTA\cr
 Type: \tab Package\cr
 Version: \tab 1.0\cr
 Date: \tab 2013-01-28\cr
-License: \tab What license is it under?\cr
+License: \tab BSD\cr
 }
-~~ An overview of how to use the package, including the most important ~~
-~~ functions ~~
+
+The original method described in the paper is meant for simplifying temporal
+ranged data, but this package supports other metrics for merging, like
+correlation and absolute value.
 }
 \author{
-Who wrote it
+Kiprianas Spiridonovas
 
-Maintainer: Who to complain to <yourfault@somewhere.net>
+Maintainer: Kiprianas Spiridonovas <k.spiridonovas@gmail.com>
 }
 \references{
-~~ Literature or other references for background information ~~
+Gordevičius, Juozas, Johann Gamper, and Michael Böhlen. "Parsimonious temporal aggregation." The VLDB Journal 21.3 (2012): 309-332.
 }
-~~ Optionally other standard keywords, one per line, from file KEYWORDS in ~~
-~~ the R documentation directory ~~
 \keyword{ package }
 \seealso{
-~~ Optional links to other man pages, e.g. ~~
-~~ \code{\link[<pkg>:<pkg>-package]{<pkg>}} ~~
+\link[IRanges:IRanges-package]{IRanges},
+\link[GenomicRanges:GenomicRanges-package]{GenomicRanges}
 }
 \examples{
-%% ~~ simple examples of the most important functions ~~
+set.seed(123)
+PTA(RangedData(ranges=IRanges(start=seq(0, 99, 10), width=11), score=rnorm(10)),
+    error.bound=0.1)
 }

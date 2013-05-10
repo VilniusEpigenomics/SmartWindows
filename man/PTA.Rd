@@ -1,0 +1,57 @@
+\name{PTA}
+\alias{PTA}
+\alias{PTA.raw}
+
+\title{PTA}
+\description{Parsimonious temporal aggregation}
+\usage{
+PTA(data, space=1, ...)
+PTA.raw(start, stop, scores, ...)
+}
+\arguments{
+    \item{data}{either a RangedData or GRanges instance with the data to be
+processed.}
+    \item{space}{the space or seqlevel (in case of GRanges) to process. The
+default is the first one.}
+    \item{start, stop}{vectors of beginnings and ends of intervals.}
+    \item{scores}{matrix of values, the i-th row of which is a vector
+corresponding to the i-th interval.}
+    \item{adjacency.treshold}{ignore gaps of this size when considering whether
+intervals are adjacent.}
+    \item{skip}{allow merging over a given amount of intervals, ignoring the
+error they introduce. Useful if data has outliers that need to be ignored.}
+    \item{count.bound}{stop processing when this amount of intervals is reached.}
+    \item{mode}{either 'normal' (default) which merges most similar adjacent
+nodes first, or 'correlation' which prefers nodes which correlate more}
+    \item{error.bound}{stop processing when the cumulative error reaches this
+level, expressed as a fraction of maximum merge error for the given data. Only
+used when mode='normal'}
+    \item{correlation.bound}{stop processing when the maximum correlation
+between nodes considered for merging is lower than this number.}
+}
+\value{
+\code{PTA} returns either RangedData or GRanges, depending on what was passed,
+containing processed data and only the space given with \code{space}.
+
+\code{PTA.raw} returns a list with items \code{start}, \code{end} and
+\code{scores} which contain processed data.
+}
+\seealso{
+\link[PTA:PTA-package]{PTA-package}
+}
+\examples{
+library(GenomicRanges)
+set.seed(123)
+
+# generate data
+x <- rnorm(20)
+y <- x + 0.5 * rnorm(20)
+z <- 0.3 * x - 0.3 * y + 0.4 * rnorm(20)
+d <- GRanges(seqnames="chr1", ranges=IRanges(start=(1:20)*10, width=6), x=x, y=y, z=z)
+
+# normal mode
+PTA(d, adjacency.treshold=10, error.bound=0.1)
+
+# correlation mode
+PTA(d, adjacency.treshold=10, mode="correlation", correlation.bound=0.8)
+}
