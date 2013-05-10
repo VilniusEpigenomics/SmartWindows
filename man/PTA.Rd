@@ -3,7 +3,7 @@
 \alias{PTA.raw}
 
 \title{PTA}
-\description{Parsimonious temporal aggregation}
+\description{Aggregate ranged data in various ways}
 \usage{
 PTA(data, space=1, ...)
 PTA.raw(start, stop, scores, count.bound=1, error.bound=Inf,
@@ -15,14 +15,15 @@ PTA.raw(start, stop, scores, count.bound=1, error.bound=Inf,
 processed.}
     \item{space}{the space or seqlevel (in case of GRanges) to process. The
 default is the first one.}
-    \item{start, stop}{vectors of beginnings and ends of intervals.}
+    \item{start, stop}{vectors of beginnings and ends of ranges. The ranges
+should be sorted and non-overlapping (see \code{\link{deoverlap}}).}
     \item{scores}{matrix of values, the i-th row of which is a vector
-corresponding to the i-th interval.}
+corresponding to the i-th range}
     \item{adjacency.treshold}{ignore gaps of this size when considering whether
-intervals are adjacent.}
-    \item{skip}{allow merging over a given amount of intervals, ignoring the
+ranges are adjacent.}
+    \item{skip}{allow merging over a given amount of ranges, ignoring the
 error they introduce. Useful if data has outliers that need to be ignored.}
-    \item{count.bound}{stop processing when this amount of intervals is reached.}
+    \item{count.bound}{stop processing when this count of ranges is reached.}
     \item{mode}{either 'normal' (default) which merges most similar adjacent
 nodes first, or 'correlation' which prefers nodes which correlate more}
     \item{error.bound}{stop processing when the cumulative error reaches this
