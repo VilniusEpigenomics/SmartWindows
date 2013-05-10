@@ -1,0 +1,22 @@
+context("PTA")
+
+set.seed(123)
+x <- rnorm(20)
+y <- x + 0.5 * rnorm(20)
+z <- 0.3 * x - 0.3 * y + 0.4 * rnorm(20)
+d <- RangedData(ranges=IRanges(start=(1:20)*10, width=6), x=x, y=y, z=z)
+
+test_that("normal mode with error.bound works", {
+    p <- PTA(d, adjacency.treshold=10, error.bound=0.1)
+    expect_true(nrow(p) < nrow(d))
+})
+
+test_that("normal mode with count.bound works", {
+    p <- PTA(d, adjacency.treshold=10, count.bound=10)
+    expect_true(nrow(p) == 10)
+})
+
+test_that("correlation mode works", {
+    p <- PTA(d, adjacency.treshold=10, mode="correlation", correlation.bound=0.8)
+    expect_true(nrow(p) < nrow(d))
+})

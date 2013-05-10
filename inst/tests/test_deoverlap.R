@@ -1,7 +1,5 @@
 context("deoverlap")
 
-library(IRanges)
-
 test_that("deoverlaps simple data", {
     initial <- IRanges(start=c(1, 3, 10), end=c(5, 12, 15))
     expect_equal(deoverlap(initial),
