@@ -1,7 +1,6 @@
 library(IRanges)
 
-PTA <- function(data,
-                count=1, error.bound=Inf, adjacency.treshold=1, skip=0, space=1, mode=c("normal", "correlation"), correlation.bound=0) {
+PTA <- function(data, space=1, ...) {
     d.start <- start(data)
     d.end <- end(data)
 
@@ -23,7 +22,7 @@ PTA <- function(data,
     }
     rm(df)
 
-    result <- PTA.raw(d.start, d.end, d.scores, count, error.bound, adjacency.treshold, skip, space, mode, correlation.bound)
+    result <- PTA.raw(d.start, d.end, d.scores, ...)
 
     ranges <- IRanges(start=result$start, end=result$end)
     if (class(data) == "GRanges") {
@@ -42,7 +41,7 @@ PTA <- function(data,
 }
 
 PTA.raw <- function(start, end, scores,
-                    count=1, error.bound=Inf, adjacency.treshold=1, skip=0, space=1, mode=c("normal", "correlation"), correlation.bound=0) {
+                    count=1, error.bound=Inf, adjacency.treshold=1, skip=0, mode=c("normal", "correlation"), correlation.bound=0) {
     mode <- match.arg(mode)
     mode.int <- switch(mode, normal=0, correlation=1)
 
