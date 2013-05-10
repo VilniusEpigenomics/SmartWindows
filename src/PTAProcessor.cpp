@@ -197,7 +197,7 @@ PTAProcessor::PTAProcessor(
         SEXP end_,
         SEXP scores_,
         SEXP count_,
-        SEXP error_,
+        SEXP error_bound_,
         SEXP adjacency_treshold_,
         SEXP skip_,
         SEXP mode_,
@@ -207,7 +207,7 @@ PTAProcessor::PTAProcessor(
     mode = as<int>(mode_);
 
     count_bound = as<int>(count_);
-    error_bound = as<double>(error_);
+    error_bound = as<double>(error_bound_);
     adjacency_treshold = as<double>(adjacency_treshold_);
     if (count_bound > 1) {
         maximum_error = INFINITY;

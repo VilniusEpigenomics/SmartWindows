@@ -1,7 +1,7 @@
 library(IRanges)
 
 PTA <- function(data,
-                count=1, error=Inf, adjacency.treshold=1, skip=0, space=1, mode=c("normal", "correlation"), correlation.bound=0) {
+                count=1, error.bound=Inf, adjacency.treshold=1, skip=0, space=1, mode=c("normal", "correlation"), correlation.bound=0) {
     d.start <- start(data)
     d.end <- end(data)
 
@@ -13,7 +13,7 @@ PTA <- function(data,
     } else if (class(data) == "RangedData") {
         df <- values(data)[[space]]
     } else {
-        error("Unsupported data type")
+        stop("Unsupported data type")
     }
 
     d.scores <- matrix(nrow=nrow(df), ncol=ncol(df))
@@ -23,7 +23,7 @@ PTA <- function(data,
     }
     rm(df)
 
-    result <- PTA.raw(d.start, d.end, d.scores, count, error, adjacency.treshold, skip, space, mode, correlation.bound)
+    result <- PTA.raw(d.start, d.end, d.scores, count, error.bound, adjacency.treshold, skip, space, mode, correlation.bound)
 
     ranges <- IRanges(start=result$start, end=result$end)
     if (class(data) == "GRanges") {
@@ -38,13 +38,13 @@ PTA <- function(data,
 }
 
 PTA.raw <- function(start, end, scores,
-                    count=1, error=Inf, adjacency.treshold=1, skip=0, space=1, mode=c("normal", "correlation"), correlation.bound=0) {
+                    count=1, error.bound=Inf, adjacency.treshold=1, skip=0, space=1, mode=c("normal", "correlation"), correlation.bound=0) {
     mode <- match.arg(mode)
     mode.int <- switch(mode, normal=0, correlation=1)
 
     result <- .Call("PTA",
                     start, end, scores,
-                    count, error, adjacency.treshold, skip, mode.int, correlation.bound,
+                    count, error.bound, adjacency.treshold, skip, mode.int, correlation.bound,
                     PACKAGE="PTA")
 
     colnames(result$scores) <- colnames(scores)
