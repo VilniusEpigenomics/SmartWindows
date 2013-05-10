@@ -9,7 +9,7 @@ PTA <- function(data,
         if (is.numeric(space)) {
             space <- as.vector(seqlevels(data)[space])
         }
-        df <- values(data[seqnames(data) == space])
+        df <- mcols(data[seqnames(data) == space])
     } else if (class(data) == "RangedData") {
         df <- values(data)[[space]]
     } else {
@@ -27,7 +27,11 @@ PTA <- function(data,
 
     ranges <- IRanges(start=result$start, end=result$end)
     if (class(data) == "GRanges") {
-        GRanges(ranges=ranges, seqinfo=seqinfo(data), seqnames=space, mcols=as.data.frame(result$scores))
+        r <- GRanges(ranges=ranges, seqinfo=seqinfo(data), seqnames=space)
+        for (col in colnames(result$scores)) {
+            values(r)[[col]] <- result$scores[, col]
+        }
+        r
     } else if (class(data) == "RangedData") {
         r <- RangedData(ranges=ranges, space=space)
         for (col in colnames(result$scores)) {
