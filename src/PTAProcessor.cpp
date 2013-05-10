@@ -14,13 +14,6 @@ using namespace std;
         assert(is_heap(heaps[__CHECK_HEAP_heap].begin(), heaps[__CHECK_HEAP_heap].end(), greaters[__CHECK_HEAP_heap]));
 #endif
 
-List PTAProcessor::get_result() const {
-    return List::create(
-            Named("start") = start,
-            Named("end") = end,
-            Named("scores") = scores);
-}
-
 double PTAProcessor::length(int interval) const {
     return end[interval] - start[interval] + 1;
 }
@@ -308,7 +301,7 @@ double PTAProcessor::correlation(int x, int y) const {
     return covar / sqrt(var_x * var_y);
 }
 
-void PTAProcessor::run() {
+List PTAProcessor::run() {
     double abs_error_bound = error_bound * maximum_error;
     double cumulative_error = 0;
     while (node_count > count_bound) {
@@ -352,7 +345,8 @@ void PTAProcessor::run() {
         ++i;
     }
 
-    start = newstart;
-    end = newend;
-    scores = newscores;
+    return List::create(
+            Named("start") = newstart,
+            Named("end") = newend,
+            Named("scores") = newscores);
 }

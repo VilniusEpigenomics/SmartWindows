@@ -80,8 +80,7 @@ class PTAProcessor {
         PTAProcessor(SEXP start_, SEXP end_, SEXP scores_, SEXP count_, SEXP error_bound_,
                 SEXP adjacency_treshold_, SEXP skip_, SEXP mode_,
                 SEXP correlation_bound_);
-        void run();
-        Rcpp::List get_result() const;
+        Rcpp::List run();
 };
 
 #endif
