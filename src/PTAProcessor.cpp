@@ -54,7 +54,18 @@ double PTAProcessor::key(int heap, int nodeid) const {
         if (previd == first_node) return INFINITY;
         previd = nodes[previd].prev;
     }
-    return dsim(previd, nodeid);
+
+    switch (mode) {
+        case PTA_MODE_NORMAL:
+            return dsim(previd, nodeid);
+        case PTA_MODE_CORRELATION:
+            {
+                double cor = correlation(previd, nodeid);
+                return cor == 0 ? INFINITY : 1 / abs(cor);
+            }
+        default:
+            stop("Bad PTA mode.");
+    }
 }
 
 int PTAProcessor::parent(int i) const {
@@ -189,17 +200,21 @@ PTAProcessor::PTAProcessor(
         SEXP error_,
         SEXP adjacency_treshold_,
         SEXP skip_,
-        SEXP mode_)
+        SEXP mode_,
+        SEXP correlation_bound_)
     : start(start_), end(end_), scores(scores_)
 {
+    mode = as<int>(mode_);
+
     count_bound = as<int>(count_);
     error_bound = as<double>(error_);
     adjacency_treshold = as<double>(adjacency_treshold_);
     if (count_bound > 1) {
-        error_bounded = false;
+        maximum_error = INFINITY;
+    } else if (mode == PTA_MODE_CORRELATION) {
+        maximum_error = INFINITY;
+        correlation_bound = as<double>(correlation_bound_);
     } else {
-        error_bounded = true;
-
         // calculate maximum error
         NumericVector score1 = scores(0, _);
         double length1 = length(0);
@@ -226,8 +241,6 @@ PTAProcessor::PTAProcessor(
             }
         }
     }
-
-    mode = as<int>(mode_);
 
     nheaps = as<int>(skip_) + 1;
     node_count = size();
@@ -262,14 +275,37 @@ PTAProcessor::PTAProcessor(
 }
 
 double PTAProcessor::dsim(int i, int j) const {
-    if (adjacent(i, j)) {
-        const NumericVector z = merged_scores(i, j);
-        NumericVector diff_i = z - const_cast<PTAProcessor *>(this)->scores(i, _);
-        NumericVector diff_j = z - const_cast<PTAProcessor *>(this)->scores(j, _);
-        return length(i) * sum_sq(diff_i) + length(j) * sum_sq(diff_j);
-    } else {
-        return INFINITY;
+    if (!adjacent(i, j)) return INFINITY;
+
+    const NumericVector z = merged_scores(i, j);
+    NumericVector diff_i = z - const_cast<PTAProcessor *>(this)->scores(i, _);
+    NumericVector diff_j = z - const_cast<PTAProcessor *>(this)->scores(j, _);
+    return length(i) * sum_sq(diff_i) + length(j) * sum_sq(diff_j);
+}
+
+double PTAProcessor::correlation(int x, int y) const {
+    if (!adjacent(x, y)) return 0;
+
+    NumericVector scores_x = const_cast<PTAProcessor *>(this)->scores(x, _);
+    NumericVector scores_y = const_cast<PTAProcessor *>(this)->scores(y, _);
+    int n = scores_x.size();
+
+    double mean_x = accumulate(scores_x.begin(), scores_x.end(), 0.0) / n;
+    double mean_y = accumulate(scores_y.begin(), scores_y.end(), 0.0) / n;
+
+    double var_x = 0;
+    double var_y = 0;
+    double covar = 0;
+
+    for (int i = 0; i < n; ++i) {
+        double delta_x = scores_x[i] - mean_x;
+        double delta_y = scores_y[i] - mean_y;
+        var_x += delta_x * delta_x;
+        var_y += delta_y * delta_y;
+        covar += delta_x * delta_y;
     }
+
+    return covar / sqrt(var_x * var_y);
 }
 
 void PTAProcessor::run() {
@@ -278,24 +314,30 @@ void PTAProcessor::run() {
     while (node_count > count_bound) {
         int minheap = 0;
         int minnode = heaps[0].front();
-        double minerror = key(minheap, minnode);
+        double minkey = key(minheap, minnode);
         for (int i = 1; i < nheaps; ++i) {
-            if (key(i, heaps[i].front()) < minerror) {
+            if (key(i, heaps[i].front()) < minkey) {
                 minheap = i;
                 minnode = heaps[i].front();
-                minerror = key(minheap, minnode);
+                minkey = key(minheap, minnode);
             }
         }
 
-        if (cumulative_error + minerror > abs_error_bound) {
-            break;
+        if (mode == PTA_MODE_CORRELATION) {
+           if (1 / minkey <= correlation_bound) {
+               break;
+           }
+           Rprintf("Correlation: %f\n", 1/minkey);
+        } else {
+            if (cumulative_error + minkey > abs_error_bound) {
+                break;
+            }
+            cumulative_error += minkey;
         }
 
         if (!merge(minheap, minnode)) {
             break;
         }
-
-        cumulative_error += minerror;
     }
 
     NumericVector newstart(node_count);

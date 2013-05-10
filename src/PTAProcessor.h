@@ -38,8 +38,8 @@ class PTAProcessor {
 
         int count_bound;
         double error_bound;
-        bool error_bounded;
         double adjacency_treshold;
+        double correlation_bound;
 
         int minimum_count;
         double maximum_error;
@@ -60,6 +60,7 @@ class PTAProcessor {
         int last_node;
 
         double dsim(int i, int j) const;
+        double correlation(int i, int j) const;
 
         int parent(int i) const;
         int left_child(int i) const;
@@ -76,7 +77,9 @@ class PTAProcessor {
         bool merge(int heap, int node);
 
     public:
-        PTAProcessor(SEXP start_, SEXP end_, SEXP scores_, SEXP count_, SEXP error_, SEXP adjacency_treshold_, SEXP skip_, SEXP mode_);
+        PTAProcessor(SEXP start_, SEXP end_, SEXP scores_, SEXP count_, SEXP error_,
+                SEXP adjacency_treshold_, SEXP skip_, SEXP mode_,
+                SEXP correlation_bound_);
         void run();
         Rcpp::List get_result() const;
 };
