@@ -7,7 +7,7 @@
 #define PTA_MODE_NORMAL 0
 #define PTA_MODE_CORRELATION 1
 
-class PTAProcessor {
+class __attribute__((visibility("hidden"))) PTAProcessor {
     private:
         struct Node {
             int prev;

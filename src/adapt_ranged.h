@@ -3,6 +3,6 @@
 
 #include <Rcpp.h>
 
-RcppExport __attribute__((visibility("default"))) SEXP adapt_ranged(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
+RcppExport SEXP adapt_ranged(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
 
 #endif

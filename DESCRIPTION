@@ -7,5 +7,5 @@ Author: Kiprianas Spiridonovas
 Maintainer: Kiprianas Spiridonovas <k.spiridonovas@gmail.com>
 Description: Simplifies RangedData while minimising the error.
 License: BSD
-Depends: Rcpp (>= 0.10.2), IRanges
+Depends: Rcpp (>= 0.10.2), IRanges, GenomicRanges, testthat
 LinkingTo: Rcpp

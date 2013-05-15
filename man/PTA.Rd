@@ -6,7 +6,7 @@
 \description{Aggregate ranged data in various ways}
 \usage{
 PTA(data, space=1, ...)
-PTA.raw(start, stop, scores, count.bound=1, error.bound=Inf,
+PTA.raw(start, end, scores, count.bound=1, error.bound=Inf,
         adjacency.treshold=1, skip=0, mode=c("normal", "correlation"),
         correlation.bound=0, correlation.spearman=FALSE)
 }
@@ -16,7 +16,7 @@ processed.}
     \item{space}{the space or seqlevel (in case of GRanges) to process. The
 default is the first one.}
     \item{...}{these arguments are shared with PTA.raw.}
-    \item{start, stop}{vectors of beginnings and ends of ranges. The ranges
+    \item{start, end}{vectors of beginnings and ends of ranges. The ranges
 should be sorted and non-overlapping (see \code{\link{deoverlap}}).}
     \item{scores}{matrix of values, the i-th row of which is a vector
 corresponding to the i-th range}

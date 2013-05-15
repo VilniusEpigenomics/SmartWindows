@@ -176,7 +176,7 @@ bool PTAProcessor::merge(int minheap, int minnode) {
     return true;
 }
 
-inline double sum_sq(const NumericVector x) {
+static inline double sum_sq(const NumericVector x) {
     double sum = 0.0;
     for (int i = 0; i < x.size(); ++i) {
         double x_i = x[i];

@@ -3,6 +3,6 @@
 
 #include <Rcpp.h>
 
-RcppExport __attribute__((visibility("default"))) SEXP deoverlap(SEXP, SEXP);
+RcppExport SEXP deoverlap(SEXP, SEXP);
 
 #endif
