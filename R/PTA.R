@@ -1,5 +1,4 @@
 library(IRanges)
-library(GenomicRanges)
 
 PTA <- function(data, space=1, ...) {
     d.start <- start(data)
@@ -7,9 +6,9 @@ PTA <- function(data, space=1, ...) {
 
     if (class(data) == "GRanges") {
         if (is.numeric(space)) {
-            space <- as.vector(seqlevels(data)[space])
+            space <- as.vector(GenomicRanges::seqlevels(data)[space])
         }
-        df <- mcols(data[seqnames(data) == space])
+        df <- GenomicRanges::mcols(data[seqnames(data) == space])
     } else if (class(data) == "RangedData") {
         df <- values(data)[[space]]
     } else {
@@ -27,7 +26,7 @@ PTA <- function(data, space=1, ...) {
 
     ranges <- IRanges(start=result$start, end=result$end)
     if (class(data) == "GRanges") {
-        r <- GRanges(ranges=ranges, seqinfo=seqinfo(data), seqnames=space)
+        r <- GRanges(ranges=ranges, seqinfo=GenomicRanges::seqinfo(data), seqnames=space)
         for (col in colnames(result$scores)) {
             values(r)[[col]] <- result$scores[, col]
         }

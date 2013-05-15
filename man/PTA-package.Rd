@@ -34,7 +34,7 @@ Gordevičius, Juozas, Johann Gamper, and Michael Böhlen. "Parsimonious temporal
 }
 \keyword{ package }
 \seealso{
-\link{IRanges}, \link{GenomicRanges}
+\link{IRanges}, \link[GenomicRanges:GenomicRanges]{GenomicRanges}
 }
 \examples{
 set.seed(123)
