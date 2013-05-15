@@ -15,6 +15,7 @@ PTA.raw(start, stop, scores, count.bound=1, error.bound=Inf,
 processed.}
     \item{space}{the space or seqlevel (in case of GRanges) to process. The
 default is the first one.}
+    \item{...}{these arguments are shared with PTA.raw.}
     \item{start, stop}{vectors of beginnings and ends of ranges. The ranges
 should be sorted and non-overlapping (see \code{\link{deoverlap}}).}
     \item{scores}{matrix of values, the i-th row of which is a vector
