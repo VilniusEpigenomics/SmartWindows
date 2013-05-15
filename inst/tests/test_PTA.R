@@ -28,6 +28,8 @@ test_that("spearman correlation works", {
 
 test_that("PTA.raw works", {
     p <- PTA.raw(1:10, 1:10+1, 1:10)
-    expect_true(nrow(p$scores) == 1)
+    expect_true(nrow(p$scores) == length(p$start))
+    expect_true(nrow(p$scores) == length(p$end))
     expect_true(ncol(p$scores) == 1)
+    expect_true(p$cumulative.error > 0)
 })

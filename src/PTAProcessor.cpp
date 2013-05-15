@@ -331,12 +331,13 @@ List PTAProcessor::run() {
             if (cumulative_error + minkey > abs_error_bound) {
                 break;
             }
-            cumulative_error += minkey;
         }
 
         if (!merge(minheap, minnode)) {
             break;
         }
+
+        cumulative_error += minkey;
     }
 
     NumericVector newstart(node_count);
@@ -355,5 +356,6 @@ List PTAProcessor::run() {
     return List::create(
             Named("start") = newstart,
             Named("end") = newend,
-            Named("scores") = newscores);
+            Named("scores") = newscores,
+            Named("cumulative.error") = cumulative_error);
 }

@@ -39,7 +39,9 @@ between nodes considered for merging is lower than this number.}
 containing processed data and only the space given with \code{space}.
 
 \code{PTA.raw} returns a list with items \code{start}, \code{end} and
-\code{scores} which contain processed data.
+\code{scores} which contain processed data. The list also contains the
+cumulative error reached (excluding nodes skipped in merges when \code{skip} >
+0) in item \code{cumulative.error}.
 }
 \seealso{
 \link[PTA]{PTA-package}
