@@ -54,7 +54,8 @@ double PTAProcessor::key(int heap, int nodeid) const {
         case PTA_MODE_CORRELATION:
             {
                 double cor = correlation(previd, nodeid);
-                return cor == 0 ? INFINITY : 1 / abs(cor);
+                if (correlation_absolute) cor = abs(cor);
+                return 1 - cor;
             }
         default:
             throw Rcpp::exception("Bad PTA mode.");
@@ -195,7 +196,8 @@ PTAProcessor::PTAProcessor(
         SEXP skip_,
         SEXP mode_,
         SEXP correlation_bound_,
-        SEXP correlation_spearman_)
+        SEXP correlation_spearman_,
+        SEXP correlation_absolute_)
     : rank("rank"), start(start_), end(end_), scores(scores_)
 {
     mode = as<int>(mode_);
@@ -209,6 +211,7 @@ PTAProcessor::PTAProcessor(
         maximum_error = INFINITY;
         correlation_bound = as<double>(correlation_bound_);
         correlation_spearman = as<int>(correlation_spearman_);
+        correlation_absolute = as<int>(correlation_absolute_);
     } else {
         // calculate maximum error
         NumericVector score1 = scores(0, _);
@@ -324,7 +327,7 @@ List PTAProcessor::run() {
         }
 
         if (mode == PTA_MODE_CORRELATION) {
-           if (1 / minkey <= correlation_bound) {
+           if (1 - minkey <= correlation_bound) {
                break;
            }
         } else {
