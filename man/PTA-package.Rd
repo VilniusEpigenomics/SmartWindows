@@ -19,7 +19,10 @@ License: \tab BSD\cr
 
 The original method described in the paper is meant for simplifying temporal
 ranged data, but this package supports other metrics for merging, like
-correlation and absolute value.
+correlation and absolute value with the \code{\link{PTA}} function.
+
+Also contains helper functions \code{\link{deoverlap}} and
+\code{\link{adapt.ranged}}.
 }
 \author{
 Kiprianas Spiridonovas

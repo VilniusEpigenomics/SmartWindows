@@ -79,3 +79,51 @@ deoverlap <- function(x) {
 deoverlap.raw <- function(start, end) {
     .Call("deoverlap", start, end)
 }
+
+adapt.ranged <- function(ranged.data, dest.ranges, na.rm=FALSE, add.error=FALSE) {
+    destcount <- nrow(dest.ranges)
+    if (is.null(destcount)) destcount <- length(dest.ranges)
+    srccount <- nrow(ranged.data)
+    if (is.null(srccount)) srccount <- length(ranged.data)
+
+    destscore <- if (is.null(score(dest.ranges))) numeric() else score(dest.ranges)
+    sum <- rep(0, destcount)
+    len <- rep(0, destcount)
+    found <- rep(FALSE, destcount)
+    error <- rep(0, 0)
+    .Call("adapt_ranged",
+          sum, len, found, error, FALSE,
+          destcount, start(dest.ranges), end(dest.ranges),
+          destscore,
+          srccount, start(ranged.data), end(ranged.data),
+          if (is.null(score(ranged.data))) numeric() else score(ranged.data))
+    destscore <- sum / len
+
+    if (add.error) {
+        sum <- rep(0, destcount)
+        len <- rep(0, destcount)
+        found <- rep(FALSE, destcount)
+        error <- rep(0, destcount)
+        .Call("adapt_ranged",
+              sum, len, found, error, TRUE,
+              destcount, start(dest.ranges), end(dest.ranges),
+              destscore,
+              srccount, start(ranged.data), end(ranged.data),
+              if (is.null(score(ranged.data))) numeric() else score(ranged.data))
+    }
+
+    ranges <- IRanges(start=start(dest.ranges), end=end(dest.ranges))
+    newscore <- sum / len
+    if (na.rm) {
+        newscore <- newscore[found]
+        error <- error[found]
+        ranges <- ranges[found]
+    } else {
+        newscore[!found] <- NA
+    }
+    if (add.error) {
+        RangedData(ranges=ranges, score=newscore, error=error)
+    } else {
+        RangedData(ranges=ranges, score=newscore)
+    }
+}
