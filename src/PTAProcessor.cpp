@@ -265,7 +265,6 @@ PTAProcessor::PTAProcessor(
     FOR_EACH_HEAP(heap) {
         greaters[heap].set(this, heap);
         make_heap(heaps[heap].begin(), heaps[heap].end(), greaters[heap]);
-        assert(is_heap(heaps[heap].begin(), heaps[heap].end(), greaters[heap]));
         for (int i = 0; i < node_count; ++i) {
             nodes[heaps[heap][i]].positions[heap] = i;
         }
