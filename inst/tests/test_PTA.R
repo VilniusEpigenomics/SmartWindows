@@ -19,8 +19,6 @@ test_that("normal mode with count.bound works", {
 test_that("correlation mode works", {
     p <- PTA(d, adjacency.treshold=10, mode="correlation", correlation.bound=0.8)
     expect_true(nrow(p) < nrow(d))
-    p <- PTA(d, adjacency.treshold=10, mode="correlation", correlation.bound=0.8, correlation.absolute=TRUE)
-    expect_true(nrow(p) < nrow(d))
 })
 
 test_that("spearman correlation works", {

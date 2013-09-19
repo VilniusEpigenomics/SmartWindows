@@ -8,8 +8,7 @@
 PTA(data, space=1, ...)
 PTA.raw(start, end, scores, count.bound=1, error.bound=Inf,
         adjacency.treshold=1, skip=0, mode=c("normal", "correlation"),
-        correlation.bound=0, correlation.spearman=FALSE,
-        correlation.absolute=FALSE)
+        correlation.bound=0, correlation.spearman=FALSE)
 }
 \arguments{
     \item{data}{either a RangedData or GRanges instance with the data to be
@@ -34,9 +33,6 @@ used when mode='normal'}
     \item{correlation.bound}{stop processing when the maximum correlation
 between nodes considered for merging is lower than this number.}
     \item{correlation.spearman}{use Spearman correlation.}
-    \item{correlation.absolute}{use absolute correlation (negatively correlated
-regions are considered as similar as positively correlated). Otherwise negative
-correlation is considered less similar than no correlation.}
 }
 \value{
 \code{PTA} returns either RangedData or GRanges, depending on what was passed,
