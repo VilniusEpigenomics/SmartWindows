@@ -8,7 +8,7 @@
 PTA(data, space=1, ...)
 PTA.raw(start, end, scores, count.bound=1, error.bound=Inf,
         adjacency.treshold=1, skip=0, mode=c("normal", "correlation"),
-        correlation.bound=0, correlation.spearman=FALSE)
+        correlation.bound=-1, correlation.spearman=FALSE)
 }
 \arguments{
     \item{data}{either a RangedData or GRanges instance with the data to be

@@ -201,13 +201,11 @@ PTAProcessor::PTAProcessor(
 
     count_bound = as<int>(count_bound_);
     error_bound = as<double>(error_bound_);
+    correlation_bound = as<double>(correlation_bound_);
+    correlation_spearman = as<int>(correlation_spearman_);
     adjacency_treshold = as<double>(adjacency_treshold_);
-    if (count_bound > 1) {
+    if ((count_bound > 1) || (mode == PTA_MODE_CORRELATION)) {
         maximum_error = INFINITY;
-    } else if (mode == PTA_MODE_CORRELATION) {
-        maximum_error = INFINITY;
-        correlation_bound = as<double>(correlation_bound_);
-        correlation_spearman = as<int>(correlation_spearman_);
     } else {
         // calculate maximum error
         NumericVector score1 = scores(0, _);
