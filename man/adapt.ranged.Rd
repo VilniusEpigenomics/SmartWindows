@@ -10,7 +10,7 @@ adapt.ranged.raw(src.start, src.end, src.score, dest.start, dest.end)
 }
 \arguments{
     \item{ranged.data}{either a RangedData or GRanges instance with a \code{score} column.}
-    \item{src.start, src.end,  src.score}{source data.}
+    \item{src.start, src.end,  src.score}{source data. \code{src.score} can be a matrix where rows correspond to ranges.}
     \item{dest.ranges, dest.start, dest.end}{destination ranges.}
     \item{na.rm}{whether to remove ranges which don't have any relevant sources for score, or leave them as NAs.}
     \item{add.error}{add an \code{error} column which contains the sum squared error of each range's adaptation.}

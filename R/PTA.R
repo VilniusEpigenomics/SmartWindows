@@ -131,14 +131,28 @@ adapt.ranged <- function(ranged.data, dest.ranges, na.rm=FALSE, add.error=FALSE)
 adapt.ranged.raw <- function(src.start, src.end, src.score, dest.start, dest.end) {
     dest.count <- length(dest.start)
     src.count <- length(src.start)
-    sum <- rep(0, dest.count)
-    len <- rep(0, dest.count)
-    found <- rep(FALSE, dest.count)
-    error <- rep(0, 0)
-    .Call("adapt_ranged", sum, len, found, error, FALSE,
-          dest.count, dest.start, dest.end, rep(0, dest.count),
-          src.count, src.start, src.end, src.score)
-    newscore <- ifelse(found, sum / len, NA)
+    if (is.matrix(src.score)) {
+        newscore <- apply(src.score, 2,
+                          function(score) {
+                              sum <- rep(0, dest.count)
+                              len <- rep(0, dest.count)
+                              found <- rep(FALSE, dest.count)
+                              error <- rep(0, 0)
+                              .Call("adapt_ranged", sum, len, found, error, FALSE,
+                                    dest.count, dest.start, dest.end, rep(0, dest.count),
+                                    src.count, src.start, src.end, score)
+                              ifelse(found, sum / len, NA)
+                          })
+    } else {
+        sum <- rep(0, dest.count)
+        len <- rep(0, dest.count)
+        found <- rep(FALSE, dest.count)
+        error <- rep(0, 0)
+        .Call("adapt_ranged", sum, len, found, error, FALSE,
+              dest.count, dest.start, dest.end, rep(0, dest.count),
+              src.count, src.start, src.end, src.score)
+        newscore <- ifelse(found, sum / len, NA)
+    }
     list(start=dest.start,
          end=dest.end,
          score=newscore)

@@ -53,3 +53,10 @@ test_that("error is calculated correctly", {
     expect_equal(adapt.ranged(d3, d4, add.error=TRUE)$error, c(0, 0, 0))
     expect_true(sum(adapt.ranged(d1, d4, add.error=TRUE)$error) > 0)
 })
+
+test_that("works on a matrix of scores", {
+    expect_equal(adapt.ranged.raw(start(d2), end(d2), matrix(1:8, 4, 2), start(d1), end(d1)),
+                 list(start=start(d1),
+                      end=end(d1),
+                      score=matrix(c(1.5, 2, 3, 5.5, 6, 7), 3, 2)))
+})
