@@ -195,7 +195,7 @@ PTAProcessor::PTAProcessor(
         SEXP mode_,
         SEXP correlation_bound_,
         SEXP correlation_spearman_)
-    : rank("rank"), start(clone(start_)), end(clone(end_)), scores(clone(scores_))
+    : start(clone(start_)), end(clone(end_)), scores(clone(scores_))
 {
     mode = as<int>(mode_);
 
@@ -271,6 +271,25 @@ double PTAProcessor::dsim(int i, int j) const {
     NumericVector diff_i = z - const_cast<PTAProcessor *>(this)->scores(i, _);
     NumericVector diff_j = z - const_cast<PTAProcessor *>(this)->scores(j, _);
     return length(i) * sum_sq(diff_i) + length(j) * sum_sq(diff_j);
+}
+
+struct LessThanIndirect {
+    const NumericVector& x;
+    LessThanIndirect(const NumericVector& x_) : x(x_) {}
+    double operator()(int a, int b) {
+        return x[a] < x[b];
+    }
+};
+
+static NumericVector rank(const NumericVector& x) {
+    NumericVector r(x.size());
+    for (int i = 0; i < r.size(); ++i) {
+        r[i] = i;
+    }
+
+    LessThanIndirect less_than(x);
+    sort(r.begin(), r.end(), less_than);
+    return r;
 }
 
 double PTAProcessor::correlation(int x, int y) const {

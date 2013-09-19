@@ -31,8 +31,6 @@ class __attribute__((visibility("hidden"))) PTAProcessor {
             }
         };
 
-        Rcpp::Function rank;
-
         Rcpp::NumericVector start;
         Rcpp::NumericVector end;
         Rcpp::NumericMatrix scores;
