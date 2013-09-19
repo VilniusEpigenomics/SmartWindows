@@ -198,7 +198,7 @@ PTAProcessor::PTAProcessor(
         SEXP correlation_bound_,
         SEXP correlation_spearman_,
         SEXP correlation_absolute_)
-    : rank("rank"), start(start_), end(end_), scores(scores_)
+    : rank("rank"), start(clone(start_)), end(clone(end_)), scores(clone(scores_))
 {
     mode = as<int>(mode_);
 

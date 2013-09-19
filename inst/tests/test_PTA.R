@@ -35,3 +35,13 @@ test_that("PTA.raw works", {
     expect_true(ncol(p$scores) == 1)
     expect_true(p$cumulative.error > 0)
 })
+
+test_that("PTA.raw doesn't change arguments", {
+    start <- as.integer(1:10)
+    end <- as.integer(start + 1)
+    score <- as.double(1:10)
+    p <- PTA.raw(start, end, score, adjacency.treshold=2)
+    expect_equal(start, 1:10)
+    expect_equal(end, 1:10 + 1)
+    expect_equal(score, 1:10) 
+})
