@@ -152,7 +152,6 @@ bool PTAProcessor::merge(int minheap, int minnode) {
         FOR_EACH_HEAP(j) {
             heap_delete(j, node.positions[j]);
         }
-        node.alive = false;
         if (nodeid == first_node) return false;
         nodeid = nodes[nodeid].prev;
     }
@@ -249,7 +248,6 @@ PTAProcessor::PTAProcessor(
     last_node = node_count - 1;
     for (int i = 0; i < node_count; ++i) {
         Node& node = nodes[i];
-        node.alive = true;
         node.prev = i - 1;
         node.id = i;
         node.next = i + 1;
