@@ -194,7 +194,8 @@ PTAProcessor::PTAProcessor(
         SEXP skip_,
         SEXP mode_,
         SEXP correlation_bound_,
-        SEXP correlation_spearman_)
+        SEXP correlation_spearman_,
+        SEXP correlation_newmerge_)
     : start(clone(start_)), end(clone(end_)), scores(clone(scores_))
 {
     mode = as<int>(mode_);
@@ -203,6 +204,7 @@ PTAProcessor::PTAProcessor(
     error_bound = as<double>(error_bound_);
     correlation_bound = as<double>(correlation_bound_);
     correlation_spearman = as<int>(correlation_spearman_);
+    correlation_newmerge = as<int>(correlation_newmerge_);
     adjacency_treshold = as<double>(adjacency_treshold_);
     if ((count_bound > 1) || (mode == PTA_MODE_CORRELATION)) {
         maximum_error = INFINITY;
