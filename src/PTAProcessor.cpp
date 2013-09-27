@@ -38,7 +38,14 @@ template <typename T>
 struct AffineTransform {
     double intercept, coefficient;
     AffineTransform(double a, double b) : intercept(a), coefficient(b) {}
-    inline T operator()(T x) { return intercept + coefficient * x; }
+
+    inline T operator()(T x) {
+        return intercept + coefficient * x;
+    }
+
+    inline AffineTransform<T> inverse() {
+        return AffineTransform<T>(-(intercept / coefficient), 1 / coefficient);
+    }
 };
 
 static inline AffineTransform<NumericVector> linear_regression(NumericVector x, NumericVector y) {
@@ -55,9 +62,9 @@ NumericVector PTAProcessor::merged_scores(int i, int j) const {
 
     if ((mode == PTA_MODE_CORRELATION) && correlation_newmerge) {
         if (length(i) >= length(j)) {
-            scores_j = linear_regression(scores_j, scores_i)(scores_j);
+            scores_j = linear_regression(scores_i, scores_j).inverse()(scores_j);
         } else {
-            scores_i = linear_regression(scores_i, scores_j)(scores_i);
+            scores_i = linear_regression(scores_j, scores_i).inverse()(scores_i);
         }
     }
 
