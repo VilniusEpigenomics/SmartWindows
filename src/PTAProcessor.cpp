@@ -34,9 +34,33 @@ bool PTAProcessor::adjacent(int i, int j) const {
     return distance <= adjacency_treshold;
 }
 
+template <typename T>
+struct AffineTransform {
+    double intercept, coefficient;
+    AffineTransform(double a, double b) : intercept(a), coefficient(b) {}
+    inline T operator()(T x) { return intercept + coefficient * x; }
+};
+
+static inline AffineTransform<NumericVector> linear_regression(NumericVector x, NumericVector y) {
+    double mean_x = mean(x);
+    double mean_y = mean(y);
+    double b = (mean(x * y) - mean_x * mean_y) / (mean(x*x) - mean_x * mean_x);
+    double a = mean_y - b * mean_x;
+    return AffineTransform<NumericVector>(a, b);
+}
+
 NumericVector PTAProcessor::merged_scores(int i, int j) const {
     NumericVector scores_i = const_cast<PTAProcessor*>(this)->scores(i, _);
     NumericVector scores_j = const_cast<PTAProcessor*>(this)->scores(j, _);
+
+    if ((mode == PTA_MODE_CORRELATION) && correlation_newmerge) {
+        if (length(i) >= length(j)) {
+            scores_j = linear_regression(scores_j, scores_i)(scores_j);
+        } else {
+            scores_i = linear_regression(scores_i, scores_j)(scores_i);
+        }
+    }
+
     return (length(i) * scores_i + length(j) * scores_j)
          / (length(i) + length(j));
 }
