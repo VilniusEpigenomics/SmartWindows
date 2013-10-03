@@ -236,7 +236,10 @@ PTAProcessor::PTAProcessor(
         SEXP correlation_bound_,
         SEXP correlation_spearman_,
         SEXP correlation_newmerge_)
-    : start(clone(start_)), end(clone(end_)), scores(clone(scores_))
+    :
+        start(clone(NumericVector(start_))),
+        end(clone(NumericVector(end_))),
+        scores(clone(NumericVector(scores_)))
 {
     mode = as<int>(mode_);
 
