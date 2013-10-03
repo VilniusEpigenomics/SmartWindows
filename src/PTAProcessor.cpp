@@ -57,19 +57,22 @@ static inline AffineTransform<NumericVector> linear_regression(NumericVector x, 
 }
 
 NumericVector PTAProcessor::merged_scores(int i, int j) const {
-    NumericVector scores_i = const_cast<PTAProcessor*>(this)->scores(i, _);
-    NumericVector scores_j = const_cast<PTAProcessor*>(this)->scores(j, _);
-
-    if ((mode == PTA_MODE_CORRELATION) && correlation_newmerge) {
+    if (!((mode == PTA_MODE_CORRELATION) && correlation_newmerge)) {
+        NumericVector scores_i = const_cast<PTAProcessor*>(this)->scores(i, _);
+        NumericVector scores_j = const_cast<PTAProcessor*>(this)->scores(j, _);
+        return (length(i) * scores_i + length(j) * scores_j)
+             / (length(i) + length(j));
+    } else {
+        NumericVector scores_i = clone(const_cast<PTAProcessor*>(this)->scores(i, _));
+        NumericVector scores_j = clone(const_cast<PTAProcessor*>(this)->scores(j, _));
         if (length(i) >= length(j)) {
             scores_j = linear_regression(scores_i, scores_j).inverse()(scores_j);
         } else {
             scores_i = linear_regression(scores_j, scores_i).inverse()(scores_i);
         }
+        return (length(i) * scores_i + length(j) * scores_j)
+             / (length(i) + length(j));
     }
-
-    return (length(i) * scores_i + length(j) * scores_j)
-         / (length(i) + length(j));
 }
 
 double PTAProcessor::key(int heap, int nodeid) const {
