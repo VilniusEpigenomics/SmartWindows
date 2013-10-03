@@ -7,7 +7,7 @@
 \usage{
 PTA(data, space=1, ...)
 PTA.raw(start, end, scores, count.bound=1, error.bound=Inf,
-        adjacency.treshold=1, skip=0, mode=c("normal", "correlation"),
+        adjacency.threshold=1, skip=0, mode=c("normal", "correlation"),
         correlation.bound=-1, correlation.spearman=FALSE)
 }
 \arguments{
@@ -20,7 +20,7 @@ default is the first one.}
 should be sorted and non-overlapping (see \code{\link{deoverlap}}).}
     \item{scores}{matrix of values, the i-th row of which is a vector
 corresponding to the i-th range}
-    \item{adjacency.treshold}{ignore gaps of this size when considering whether
+    \item{adjacency.threshold}{ignore gaps of this size when considering whether
 ranges are adjacent.}
     \item{skip}{allow merging over a given amount of ranges, ignoring the
 error they introduce. Useful if data has outliers that need to be ignored.}
@@ -57,8 +57,8 @@ z <- 0.3 * x - 0.3 * y + 0.4 * rnorm(20)
 d <- GRanges(seqnames="chr1", ranges=IRanges(start=(1:20)*10, width=6), x=x, y=y, z=z)
 
 # normal mode
-PTA(d, adjacency.treshold=10, error.bound=0.1)
+PTA(d, adjacency.threshold=10, error.bound=0.1)
 
 # correlation mode
-PTA(d, adjacency.treshold=10, mode="correlation", correlation.bound=0.8)
+PTA(d, adjacency.threshold=10, mode="correlation", correlation.bound=0.8)
 }
