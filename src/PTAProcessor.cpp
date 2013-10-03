@@ -57,20 +57,20 @@ static inline AffineTransform<NumericVector> linear_regression(NumericVector x, 
 }
 
 NumericVector PTAProcessor::merged_scores(int i, int j) const {
+    const NumericVector scores_i = const_cast<PTAProcessor*>(this)->scores(i, _);
+    const NumericVector scores_j = const_cast<PTAProcessor*>(this)->scores(j, _);
     if (!((mode == PTA_MODE_CORRELATION) && correlation_newmerge)) {
-        NumericVector scores_i = const_cast<PTAProcessor*>(this)->scores(i, _);
-        NumericVector scores_j = const_cast<PTAProcessor*>(this)->scores(j, _);
         return (length(i) * scores_i + length(j) * scores_j)
              / (length(i) + length(j));
     } else {
-        NumericVector scores_i = clone(const_cast<PTAProcessor*>(this)->scores(i, _));
-        NumericVector scores_j = clone(const_cast<PTAProcessor*>(this)->scores(j, _));
+        NumericVector scores_i_m = clone(scores_i);
+        NumericVector scores_j_m = clone(scores_j);
         if (length(i) >= length(j)) {
-            scores_j = linear_regression(scores_i, scores_j).inverse()(scores_j);
+            scores_j_m = linear_regression(scores_i_m, scores_j_m).inverse()(scores_j_m);
         } else {
-            scores_i = linear_regression(scores_j, scores_i).inverse()(scores_i);
+            scores_i_m = linear_regression(scores_j_m, scores_i_m).inverse()(scores_i_m);
         }
-        return (length(i) * scores_i + length(j) * scores_j)
+        return (length(i) * scores_i_m + length(j) * scores_j_m)
              / (length(i) + length(j));
     }
 }
