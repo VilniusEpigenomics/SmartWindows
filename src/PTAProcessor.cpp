@@ -85,7 +85,11 @@ double PTAProcessor::key(int heap, int nodeid) const {
         case PTA_MODE_CORRELATION:
             {
                 double cor = correlation(previd, nodeid);
-                return 1 - cor;
+                if (correlation_newmerge) {
+                    return 1 - abs(cor);
+                } else {
+                    return 1 - cor;
+                }
             }
         default:
             throw Rcpp::exception("Bad PTA mode.");
