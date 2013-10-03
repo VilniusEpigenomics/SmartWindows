@@ -31,7 +31,7 @@ bool PTAProcessor::adjacent(int i, int j) const {
     if (distance < 0) {
         throw Rcpp::exception("Intervals should be sorted and non-overlapping.");
     }
-    return distance <= adjacency_treshold;
+    return distance <= adjacency_threshold;
 }
 
 template <typename T>
@@ -227,7 +227,7 @@ PTAProcessor::PTAProcessor(
         SEXP scores_,
         SEXP count_bound_,
         SEXP error_bound_,
-        SEXP adjacency_treshold_,
+        SEXP adjacency_threshold_,
         SEXP skip_,
         SEXP mode_,
         SEXP correlation_bound_,
@@ -242,7 +242,7 @@ PTAProcessor::PTAProcessor(
     correlation_bound = as<double>(correlation_bound_);
     correlation_spearman = as<int>(correlation_spearman_);
     correlation_newmerge = as<int>(correlation_newmerge_);
-    adjacency_treshold = as<double>(adjacency_treshold_);
+    adjacency_threshold = as<double>(adjacency_threshold_);
     if ((count_bound > 1) || (mode == PTA_MODE_CORRELATION)) {
         maximum_error = INFINITY;
     } else {

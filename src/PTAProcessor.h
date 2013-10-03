@@ -37,7 +37,7 @@ class __attribute__((visibility("hidden"))) PTAProcessor {
 
         int count_bound;
         double error_bound;
-        double adjacency_treshold;
+        double adjacency_threshold;
         double correlation_bound;
         bool correlation_spearman;
         bool correlation_newmerge;
@@ -79,7 +79,7 @@ class __attribute__((visibility("hidden"))) PTAProcessor {
 
     public:
         PTAProcessor(SEXP start_, SEXP end_, SEXP scores_, SEXP count_bound_, SEXP error_bound_,
-                SEXP adjacency_treshold_, SEXP skip_, SEXP mode_,
+                SEXP adjacency_threshold_, SEXP skip_, SEXP mode_,
                 SEXP correlation_bound_, SEXP correlation_spearman_, SEXP correlation_newmerge_);
         Rcpp::List run();
 };

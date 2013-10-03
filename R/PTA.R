@@ -41,7 +41,7 @@ PTA <- function(data, space=1, ...) {
 }
 
 PTA.raw <- function(start, end, scores,
-                    count.bound=1, error.bound=Inf, adjacency.treshold=1, skip=0, mode=c("normal", "correlation"),
+                    count.bound=1, error.bound=Inf, adjacency.threshold=1, skip=0, mode=c("normal", "correlation"),
                     correlation.bound=-1, correlation.spearman=FALSE, correlation.newmerge=TRUE) {
     mode <- match.arg(mode)
     mode.int <- switch(mode, normal=0, correlation=1)
@@ -60,7 +60,7 @@ PTA.raw <- function(start, end, scores,
 
     result <- .Call("PTA",
                     start, end, scores,
-                    count.bound, error.bound, adjacency.treshold, skip, mode.int,
+                    count.bound, error.bound, adjacency.threshold, skip, mode.int,
                     correlation.bound, correlation.spearman, correlation.newmerge,
                     PACKAGE="PTA")
 
