@@ -39,16 +39,16 @@ struct AffineTransform {
     double intercept, coefficient;
     AffineTransform(double a, double b) : intercept(a), coefficient(b) {}
 
-    inline T operator()(T x) {
+    inline T operator()(const T& x) const {
         return intercept + coefficient * x;
     }
 
-    inline AffineTransform<T> inverse() {
+    inline AffineTransform<T> inverse() const {
         return AffineTransform<T>(-(intercept / coefficient), 1 / coefficient);
     }
 };
 
-static inline AffineTransform<NumericVector> linear_regression(NumericVector x, NumericVector y) {
+static inline AffineTransform<NumericVector> linear_regression(const NumericVector& x, const NumericVector& y) {
     double mean_x = mean(x);
     double mean_y = mean(y);
     double b = (mean(x * y) - mean_x * mean_y) / (mean(x*x) - mean_x * mean_x);
@@ -215,7 +215,7 @@ bool PTAProcessor::merge(int minheap, int minnode) {
     return true;
 }
 
-static inline double sum_sq(const NumericVector x) {
+static inline double sum_sq(const NumericVector& x) {
     double sum = 0.0;
     for (int i = 0; i < x.size(); ++i) {
         double x_i = x[i];
@@ -250,7 +250,7 @@ PTAProcessor::PTAProcessor(
         maximum_error = INFINITY;
     } else {
         // calculate maximum error
-        NumericVector score1 = scores(0, _);
+        NumericVector score1 = clone(NumericVector(scores(0, _)));
         double length1 = length(0);
         int first_i = 0;
         maximum_error = 0;
@@ -258,11 +258,11 @@ PTAProcessor::PTAProcessor(
         for (int i = 1; i <= size(); ++i) {
             if ((i < size()) && adjacent(i - 1, i)) {
                 score1 = (length1 * score1 + length(i) * scores(i, _))
-                    / (length1 + length(i));
+                       / (length1 + length(i));
                 length1 += length(i);
             } else {
                 for (int j = first_i; j < i; ++j) {
-                    NumericVector diff = score1 - scores(j, _);
+                    const NumericVector diff = score1 - scores(j, _);
                     maximum_error += length(j) * sum_sq(diff);
                 }
 
@@ -308,15 +308,15 @@ PTAProcessor::PTAProcessor(
 
 double PTAProcessor::dsim(int i, int j) const {
     const NumericVector z = merged_scores(i, j);
-    NumericVector diff_i = z - const_cast<PTAProcessor *>(this)->scores(i, _);
-    NumericVector diff_j = z - const_cast<PTAProcessor *>(this)->scores(j, _);
+    const NumericVector diff_i = z - const_cast<PTAProcessor *>(this)->scores(i, _);
+    const NumericVector diff_j = z - const_cast<PTAProcessor *>(this)->scores(j, _);
     return length(i) * sum_sq(diff_i) + length(j) * sum_sq(diff_j);
 }
 
 struct LessThanIndirect {
     const NumericVector& x;
     LessThanIndirect(const NumericVector& x_) : x(x_) {}
-    double operator()(int a, int b) {
+    double operator()(int a, int b) const {
         return x[a] < x[b];
     }
 };
@@ -327,20 +327,24 @@ static NumericVector rank(const NumericVector& x) {
         r[i] = i;
     }
 
-    LessThanIndirect less_than(x);
+    const LessThanIndirect less_than(x);
     sort(r.begin(), r.end(), less_than);
     return r;
 }
 
 double PTAProcessor::correlation(int x, int y) const {
-    NumericVector scores_x = const_cast<PTAProcessor *>(this)->scores(x, _);
-    NumericVector scores_y = const_cast<PTAProcessor *>(this)->scores(y, _);
-    int n = scores_x.size();
+    NumericVector scores_x;
+    NumericVector scores_y;
 
     if (correlation_spearman) {
-        scores_x = rank(scores_x);
-        scores_y = rank(scores_y);
+        scores_x = rank(const_cast<PTAProcessor *>(this)->scores(x, _));
+        scores_y = rank(const_cast<PTAProcessor *>(this)->scores(y, _));
+    } else {
+        scores_x = const_cast<PTAProcessor *>(this)->scores(x, _);
+        scores_x = const_cast<PTAProcessor *>(this)->scores(y, _);
     }
+
+    int n = scores_x.size();
 
     double mean_x = mean(scores_x);
     double mean_y = mean(scores_y);
