@@ -79,6 +79,8 @@ double PTAProcessor::key(int heap, int nodeid) const {
         previd = nodes[previd].prev;
     }
 
+    if (!adjacent(previd, nodeid)) return INFINITY;
+
     switch (mode) {
         case PTA_MODE_NORMAL:
             return dsim(previd, nodeid);
@@ -302,8 +304,6 @@ PTAProcessor::PTAProcessor(
 }
 
 double PTAProcessor::dsim(int i, int j) const {
-    if (!adjacent(i, j)) return INFINITY;
-
     const NumericVector z = merged_scores(i, j);
     NumericVector diff_i = z - const_cast<PTAProcessor *>(this)->scores(i, _);
     NumericVector diff_j = z - const_cast<PTAProcessor *>(this)->scores(j, _);
@@ -330,8 +330,6 @@ static NumericVector rank(const NumericVector& x) {
 }
 
 double PTAProcessor::correlation(int x, int y) const {
-    if (!adjacent(x, y)) return 0;
-
     NumericVector scores_x = const_cast<PTAProcessor *>(this)->scores(x, _);
     NumericVector scores_y = const_cast<PTAProcessor *>(this)->scores(y, _);
     int n = scores_x.size();
@@ -341,8 +339,8 @@ double PTAProcessor::correlation(int x, int y) const {
         scores_y = rank(scores_y);
     }
 
-    double mean_x = accumulate(scores_x.begin(), scores_x.end(), 0.0) / n;
-    double mean_y = accumulate(scores_y.begin(), scores_y.end(), 0.0) / n;
+    double mean_x = mean(scores_x);
+    double mean_y = mean(scores_y);
 
     double var_x = 0;
     double var_y = 0;
