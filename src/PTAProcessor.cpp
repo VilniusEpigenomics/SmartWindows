@@ -344,7 +344,7 @@ double PTAProcessor::correlation(int x, int y) const {
         scores_y = rank(const_cast<PTAProcessor *>(this)->scores(y, _));
     } else {
         scores_x = const_cast<PTAProcessor *>(this)->scores(x, _);
-        scores_x = const_cast<PTAProcessor *>(this)->scores(y, _);
+        scores_y = const_cast<PTAProcessor *>(this)->scores(y, _);
     }
 
     int n = scores_x.size();
