@@ -9,20 +9,33 @@ d <- RangedData(ranges=IRanges(start=(1:20)*10, width=6), x=x, y=y, z=z)
 test_that("normal mode with error.bound works", {
     p <- PTA(d, adjacency.threshold=10, error.bound=0.1)
     expect_true(nrow(p) < nrow(d))
+    p <- PTA(d, filter=c(T, F, F), adjacency.threshold=10, error.bound=0.1)
+    expect_true(nrow(p) < nrow(d))
+})
+
+test_that("skip works", {
+    p <- PTA(d, skip=1, adjacency.threshold=20, error.bound=0.1)
+    expect_true(nrow(p) < nrow(d))
 })
 
 test_that("normal mode with count.bound works", {
     p <- PTA(d, adjacency.threshold=10, count.bound=10)
+    expect_true(nrow(p) == 10)
+    p <- PTA(d, filter=c(T, F, F), adjacency.threshold=10, count.bound=10)
     expect_true(nrow(p) == 10)
 })
 
 test_that("correlation mode works", {
     p <- PTA(d, adjacency.threshold=10, mode="correlation", correlation.bound=0.8)
     expect_true(nrow(p) < nrow(d))
+    p <- PTA(d, filter=c(T, T, F), adjacency.threshold=10, mode="correlation", correlation.bound=0.8)
+    expect_true(nrow(p) < nrow(d))
 })
 
 test_that("spearman correlation works", {
     p <- PTA(d, adjacency.threshold=10, mode="correlation", correlation.bound=0.8, correlation.spearman=TRUE)
+    expect_true(nrow(p) < nrow(d))
+    p <- PTA(d, filter=c(T, F, T), adjacency.threshold=10, mode="correlation", correlation.bound=0.8, correlation.spearman=TRUE)
     expect_true(nrow(p) < nrow(d))
 })
 

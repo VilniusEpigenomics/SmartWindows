@@ -14,24 +14,47 @@ using namespace std;
         assert(is_heap(heaps[__CHECK_HEAP_heap].begin(), heaps[__CHECK_HEAP_heap].end(), greaters[__CHECK_HEAP_heap]));
 #endif
 
-double PTAProcessor::length(int interval) const {
-    return end[interval] - start[interval] + 1;
+/// UTILITY FUNCTIONS
+
+static inline double sum_sq(const NumericVector& x) {
+    double sum = 0.0;
+    for (int i = 0; i < x.size(); ++i) {
+        double x_i = x[i];
+        sum += x_i * x_i;
+    }
+    return sum;
 }
 
-bool PTAProcessor::adjacent(int i, int j) const {
-    if (i == j) {
-        return true;
+static inline double sum_sq_filtered(const NumericVector& x, const IntegerVector& filter) {
+    double sum = 0.0;
+    for (int i = 0; i < x.size(); ++i) {
+        if (filter[i]) {
+            double x_i = x[i];
+            sum += x_i * x_i;
+        }
+    }
+    return sum;
+}
+
+struct LessThanIndirect {
+    const NumericVector& x;
+    LessThanIndirect(const NumericVector& x_) : x(x_) {}
+    double operator()(int a, int b) const {
+        if (x[a] == -1) return false;
+        if (x[b] == -1) return true;
+        return x[a] < x[b];
+    }
+};
+
+inline static NumericVector rank(const NumericVector& x) {
+    NumericVector r(x.size());
+    for (int i = 0; i < r.size(); ++i) {
+        r[i] = i;
     }
 
-    if (i > j) {
-        std::swap(i, j);
-    }
-
-    double distance = start[j] - end[i];
-    if (distance < 0) {
-        throw Rcpp::exception("Intervals should be sorted and non-overlapping.");
-    }
-    return distance <= adjacency_threshold;
+    const LessThanIndirect less_than(x);
+    sort(r.begin(), r.end(), less_than);
+    return r;
 }
 
 template <typename T>
@@ -56,6 +79,29 @@ static inline AffineTransform<NumericVector> linear_regression(const NumericVect
     return AffineTransform<NumericVector>(a, b);
 }
 
+
+/// METHODS
+
+double PTAProcessor::length(int interval) const {
+    return end[interval] - start[interval] + 1;
+}
+
+bool PTAProcessor::adjacent(int i, int j) const {
+    if (i == j) {
+        return true;
+    }
+
+    if (i > j) {
+        std::swap(i, j);
+    }
+
+    double distance = start[j] - end[i];
+    if (distance < 0) {
+        throw Rcpp::exception("Intervals should be sorted and non-overlapping.");
+    }
+    return distance <= adjacency_threshold;
+}
+
 NumericVector PTAProcessor::merged_scores(int i, int j) const {
     const NumericVector scores_i = const_cast<PTAProcessor*>(this)->scores(i, _);
     const NumericVector scores_j = const_cast<PTAProcessor*>(this)->scores(j, _);
@@ -66,13 +112,27 @@ NumericVector PTAProcessor::merged_scores(int i, int j) const {
         NumericVector scores_i_m = clone(scores_i);
         NumericVector scores_j_m = clone(scores_j);
         if (length(i) >= length(j)) {
-            scores_j_m = linear_regression(scores_i_m, scores_j_m).inverse()(scores_j_m);
+            scores_j_m = linear_regression(filtered_scores(i), filtered_scores(j)).inverse()(scores_j_m);
         } else {
-            scores_i_m = linear_regression(scores_j_m, scores_i_m).inverse()(scores_i_m);
+            scores_i_m = linear_regression(filtered_scores(j), filtered_scores(i)).inverse()(scores_i_m);
         }
         return (length(i) * scores_i_m + length(j) * scores_j_m)
              / (length(i) + length(j));
     }
+}
+
+inline NumericVector PTAProcessor::filtered_scores(int i) const {
+    const NumericVector s = const_cast<PTAProcessor&>(*this).scores(i, _);
+    const int n = s.size();
+    NumericVector f(sum_filter);
+    int fi = 0;
+    for (int i = 0; i < n; ++i) {
+        if (filter[i]) {
+            f[fi] = s[i];
+            ++fi;
+        }
+    }
+    return f;
 }
 
 double PTAProcessor::key(int heap, int nodeid) const {
@@ -215,22 +275,13 @@ bool PTAProcessor::merge(int minheap, int minnode) {
     return true;
 }
 
-static inline double sum_sq(const NumericVector& x) {
-    double sum = 0.0;
-    for (int i = 0; i < x.size(); ++i) {
-        double x_i = x[i];
-        sum += x_i * x_i;
-    }
-    return sum;
-}
-
-PTAProcessor::PTAProcessor(SEXP arguments_) {
-    List arguments(arguments_);
-
-    start = clone(NumericVector(static_cast<SEXP>(arguments["start"])));
-    end = clone(NumericVector(static_cast<SEXP>(arguments["end"])));
-    scores = clone(NumericMatrix(static_cast<SEXP>(arguments["scores"])));
-
+PTAProcessor::PTAProcessor(const List arguments) :
+    start(clone(NumericVector(static_cast<SEXP>(arguments["start"])))),
+    end(clone(NumericVector(static_cast<SEXP>(arguments["end"])))),
+    scores(clone(NumericMatrix(static_cast<SEXP>(arguments["scores"])))),
+    filter(NumericVector(static_cast<SEXP>(arguments["filter"]))),
+    sum_filter(sum(NumericVector(static_cast<SEXP>(arguments["filter"]))))
+{
     mode = as<int>(arguments["mode"]);
 
     count_bound = as<int>(arguments["count.bound"]);
@@ -257,7 +308,7 @@ PTAProcessor::PTAProcessor(SEXP arguments_) {
             } else {
                 for (int j = first_i; j < i; ++j) {
                     const NumericVector diff = score1 - scores(j, _);
-                    maximum_error += length(j) * sum_sq(diff);
+                    maximum_error += length(j) * sum_sq_filtered(diff, filter);
                 }
 
                 if (i < size()) {
@@ -304,58 +355,37 @@ double PTAProcessor::dsim(int i, int j) const {
     const NumericVector z = merged_scores(i, j);
     const NumericVector diff_i = z - const_cast<PTAProcessor *>(this)->scores(i, _);
     const NumericVector diff_j = z - const_cast<PTAProcessor *>(this)->scores(j, _);
-    return length(i) * sum_sq(diff_i) + length(j) * sum_sq(diff_j);
-}
-
-struct LessThanIndirect {
-    const NumericVector& x;
-    LessThanIndirect(const NumericVector& x_) : x(x_) {}
-    double operator()(int a, int b) const {
-        return x[a] < x[b];
-    }
-};
-
-static NumericVector rank(const NumericVector& x) {
-    NumericVector r(x.size());
-    for (int i = 0; i < r.size(); ++i) {
-        r[i] = i;
-    }
-
-    const LessThanIndirect less_than(x);
-    sort(r.begin(), r.end(), less_than);
-    return r;
+    return length(i) * sum_sq_filtered(diff_i, filter) + length(j) * sum_sq_filtered(diff_j, filter);
 }
 
 double PTAProcessor::correlation(int x, int y) const {
-    NumericVector scores_x;
-    NumericVector scores_y;
+    const NumericVector scores_x = filtered_scores(x);
+    const NumericVector scores_y = filtered_scores(y);
+    const int n = scores_x.size();
 
     if (correlation_spearman) {
-        scores_x = rank(const_cast<PTAProcessor *>(this)->scores(x, _));
-        scores_y = rank(const_cast<PTAProcessor *>(this)->scores(y, _));
+        // Ties in ranks are improbable (and not handled by the ranking
+        // algorithm), so use simplified method to calculate rho.
+        const NumericVector diff = rank(scores_x) - rank(scores_y);
+        return 1 - (6 * sum_sq(diff)) / (n * (n * n - 1));
     } else {
-        scores_x = const_cast<PTAProcessor *>(this)->scores(x, _);
-        scores_y = const_cast<PTAProcessor *>(this)->scores(y, _);
+        double mean_x = mean(scores_x);
+        double mean_y = mean(scores_y);
+
+        double var_x = 0;
+        double var_y = 0;
+        double covar = 0;
+
+        for (int i = 0; i < n; ++i) {
+            double delta_x = scores_x[i] - mean_x;
+            double delta_y = scores_y[i] - mean_y;
+            var_x += delta_x * delta_x;
+            var_y += delta_y * delta_y;
+            covar += delta_x * delta_y;
+        }
+
+        return covar / sqrt(var_x * var_y);
     }
-
-    int n = scores_x.size();
-
-    double mean_x = mean(scores_x);
-    double mean_y = mean(scores_y);
-
-    double var_x = 0;
-    double var_y = 0;
-    double covar = 0;
-
-    for (int i = 0; i < n; ++i) {
-        double delta_x = scores_x[i] - mean_x;
-        double delta_y = scores_y[i] - mean_y;
-        var_x += delta_x * delta_x;
-        var_y += delta_y * delta_y;
-        covar += delta_x * delta_y;
-    }
-
-    return covar / sqrt(var_x * var_y);
 }
 
 List PTAProcessor::run() {
