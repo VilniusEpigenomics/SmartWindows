@@ -224,31 +224,22 @@ static inline double sum_sq(const NumericVector& x) {
     return sum;
 }
 
-PTAProcessor::PTAProcessor(
-        SEXP start_,
-        SEXP end_,
-        SEXP scores_,
-        SEXP count_bound_,
-        SEXP error_bound_,
-        SEXP adjacency_threshold_,
-        SEXP skip_,
-        SEXP mode_,
-        SEXP correlation_bound_,
-        SEXP correlation_spearman_,
-        SEXP correlation_newmerge_)
-    :
-        start(clone(NumericVector(start_))),
-        end(clone(NumericVector(end_))),
-        scores(clone(NumericVector(scores_)))
-{
-    mode = as<int>(mode_);
+PTAProcessor::PTAProcessor(SEXP arguments_) {
+    List arguments(arguments_);
 
-    count_bound = as<int>(count_bound_);
-    error_bound = as<double>(error_bound_);
-    correlation_bound = as<double>(correlation_bound_);
-    correlation_spearman = as<int>(correlation_spearman_);
-    correlation_newmerge = as<int>(correlation_newmerge_);
-    adjacency_threshold = as<double>(adjacency_threshold_);
+    start = clone(NumericVector(static_cast<SEXP>(arguments["start"])));
+    end = clone(NumericVector(static_cast<SEXP>(arguments["end"])));
+    scores = clone(NumericMatrix(static_cast<SEXP>(arguments["scores"])));
+
+    mode = as<int>(arguments["mode"]);
+
+    count_bound = as<int>(arguments["count.bound"]);
+    error_bound = as<double>(arguments["error.bound"]);
+    correlation_bound = as<double>(arguments["correlation.bound"]);
+    correlation_spearman = as<int>(arguments["correlation.spearman"]);
+    correlation_newmerge = as<int>(arguments["correlation.newmerge"]);
+    adjacency_threshold = as<double>(arguments["adjacency.threshold"]);
+
     if ((count_bound > 1) || (mode == PTA_MODE_CORRELATION)) {
         maximum_error = INFINITY;
     } else {
@@ -279,7 +270,7 @@ PTAProcessor::PTAProcessor(
         }
     }
 
-    nheaps = as<int>(skip_) + 1;
+    nheaps = as<int>(arguments["skip"]) + 1;
     node_count = size();
     nodes.resize(node_count);
     heaps.resize(nheaps);

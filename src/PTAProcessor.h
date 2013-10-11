@@ -78,9 +78,7 @@ class __attribute__((visibility("hidden"))) PTAProcessor {
         bool merge(int heap, int node);
 
     public:
-        PTAProcessor(SEXP start_, SEXP end_, SEXP scores_, SEXP count_bound_, SEXP error_bound_,
-                SEXP adjacency_threshold_, SEXP skip_, SEXP mode_,
-                SEXP correlation_bound_, SEXP correlation_spearman_, SEXP correlation_newmerge_);
+        PTAProcessor(SEXP arguments);
         Rcpp::List run();
 };
 
