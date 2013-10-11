@@ -40,20 +40,23 @@ struct LessThanIndirect {
     const NumericVector& x;
     LessThanIndirect(const NumericVector& x_) : x(x_) {}
     double operator()(int a, int b) const {
-        if (x[a] == -1) return false;
-        if (x[b] == -1) return true;
         return x[a] < x[b];
     }
 };
 
 inline static NumericVector rank(const NumericVector& x) {
-    NumericVector r(x.size());
-    for (int i = 0; i < r.size(); ++i) {
-        r[i] = i;
+    NumericVector order(x.size());
+    for (int i = 0; i < order.size(); ++i) {
+        order[i] = i;
     }
 
     const LessThanIndirect less_than(x);
-    sort(r.begin(), r.end(), less_than);
+    sort(order.begin(), order.end(), less_than);
+
+    NumericVector r(x.size());
+    for (int i = 0; i < r.size(); ++i) {
+        r[order[i]] = i;
+    }
     return r;
 }
 
