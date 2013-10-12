@@ -40,7 +40,7 @@ PTA <- function(data, space=1, ...) {
     }
 }
 
-PTA.raw <- function(start, end, scores, filter=NULL,
+PTA.raw <- function(start, end, scores,
                     count.bound=1, error.bound=Inf, adjacency.threshold=1, skip=0, mode=c("normal", "correlation"),
                     correlation.bound=-1, correlation.spearman=FALSE, correlation.newmerge=TRUE) {
     mode <- match.arg(mode)
@@ -56,10 +56,6 @@ PTA.raw <- function(start, end, scores, filter=NULL,
 
     if (length(start) != nrow(scores)) {
         stop("Range and score counts differ")
-    }
-
-    if (is.null(filter)) {
-        filter <- rep(TRUE, ncol(scores))
     }
 
     arguments <- as.list(environment())

@@ -25,17 +25,6 @@ static inline double sum_sq(const NumericVector& x) {
     return sum;
 }
 
-static inline double sum_sq_filtered(const NumericVector& x, const IntegerVector& filter) {
-    double sum = 0.0;
-    for (int i = 0; i < x.size(); ++i) {
-        if (filter[i]) {
-            double x_i = x[i];
-            sum += x_i * x_i;
-        }
-    }
-    return sum;
-}
-
 struct LessThanIndirect {
     const NumericVector& x;
     LessThanIndirect(const NumericVector& x_) : x(x_) {}
@@ -115,27 +104,13 @@ NumericVector PTAProcessor::merged_scores(int i, int j) const {
         NumericVector scores_i_m = clone(scores_i);
         NumericVector scores_j_m = clone(scores_j);
         if (length(i) >= length(j)) {
-            scores_j_m = linear_regression(filtered_scores(i), filtered_scores(j)).inverse()(scores_j_m);
+            scores_j_m = linear_regression(scores_i, scores_j).inverse()(scores_j);
         } else {
-            scores_i_m = linear_regression(filtered_scores(j), filtered_scores(i)).inverse()(scores_i_m);
+            scores_i_m = linear_regression(scores_j, scores_i).inverse()(scores_i);
         }
         return (length(i) * scores_i_m + length(j) * scores_j_m)
              / (length(i) + length(j));
     }
-}
-
-inline NumericVector PTAProcessor::filtered_scores(int i) const {
-    const NumericVector s = const_cast<PTAProcessor&>(*this).scores(i, _);
-    const int n = s.size();
-    NumericVector f(sum_filter);
-    int fi = 0;
-    for (int i = 0; i < n; ++i) {
-        if (filter[i]) {
-            f[fi] = s[i];
-            ++fi;
-        }
-    }
-    return f;
 }
 
 double PTAProcessor::key(int heap, int nodeid) const {
@@ -282,9 +257,7 @@ bool PTAProcessor::merge(int minheap, int minnode) {
 PTAProcessor::PTAProcessor(const List arguments) :
     original_start(NumericVector(static_cast<SEXP>(arguments["start"]))),
     original_end(NumericVector(static_cast<SEXP>(arguments["end"]))),
-    original_scores(NumericMatrix(static_cast<SEXP>(arguments["scores"]))),
-    filter(NumericVector(static_cast<SEXP>(arguments["filter"]))),
-    sum_filter(sum(NumericVector(static_cast<SEXP>(arguments["filter"]))))
+    original_scores(NumericMatrix(static_cast<SEXP>(arguments["scores"])))
 {
     start = clone(original_start);
     end = clone(original_end);
@@ -315,7 +288,7 @@ PTAProcessor::PTAProcessor(const List arguments) :
             } else {
                 for (int j = first_i; j < i; ++j) {
                     const NumericVector diff = score1 - scores(j, _);
-                    maximum_error += length(j) * sum_sq_filtered(diff, filter);
+                    maximum_error += length(j) * sum_sq(diff);
                 }
 
                 if (i < size()) {
@@ -363,12 +336,12 @@ double PTAProcessor::dsim(int i, int j) const {
     const NumericVector z = merged_scores(i, j);
     const NumericVector diff_i = z - const_cast<PTAProcessor *>(this)->scores(i, _);
     const NumericVector diff_j = z - const_cast<PTAProcessor *>(this)->scores(j, _);
-    return length(i) * sum_sq_filtered(diff_i, filter) + length(j) * sum_sq_filtered(diff_j, filter);
+    return length(i) * sum_sq(diff_i) + length(j) * sum_sq(diff_j);
 }
 
 double PTAProcessor::correlation(int x, int y) const {
-    const NumericVector scores_x = filtered_scores(x);
-    const NumericVector scores_y = filtered_scores(y);
+    const NumericVector scores_x = const_cast<PTAProcessor*>(this)->scores(x, _);
+    const NumericVector scores_y = const_cast<PTAProcessor*>(this)->scores(y, _);
     const int n = scores_x.size();
 
     if (correlation_spearman) {

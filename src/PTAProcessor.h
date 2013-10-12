@@ -40,9 +40,6 @@ class __attribute__((visibility("hidden"))) PTAProcessor {
         Rcpp::NumericVector end;
         Rcpp::NumericMatrix scores;
 
-        const Rcpp::IntegerVector filter;
-        const int sum_filter;
-
         int count_bound;
         double error_bound;
         double adjacency_threshold;
@@ -54,8 +51,6 @@ class __attribute__((visibility("hidden"))) PTAProcessor {
         double maximum_error;
 
         int mode;
-
-        Rcpp::NumericVector filtered_scores(int i) const;
 
         inline int size() const { return start.size(); }
         double length(int interval) const;
