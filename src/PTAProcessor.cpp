@@ -254,6 +254,7 @@ bool PTAProcessor::merge(int minheap, int minnode) {
         FOR_EACH_HEAP(j) {
             heap_delete(j, node.positions[j]);
         }
+        node.alive = false;
         if (nodeid == first_node) return false;
         nodeid = nodes[nodeid].prev;
     }
@@ -279,12 +280,15 @@ bool PTAProcessor::merge(int minheap, int minnode) {
 }
 
 PTAProcessor::PTAProcessor(const List arguments) :
-    start(clone(NumericVector(static_cast<SEXP>(arguments["start"])))),
-    end(clone(NumericVector(static_cast<SEXP>(arguments["end"])))),
-    scores(clone(NumericMatrix(static_cast<SEXP>(arguments["scores"])))),
+    original_start(NumericVector(static_cast<SEXP>(arguments["start"]))),
+    original_end(NumericVector(static_cast<SEXP>(arguments["end"]))),
+    original_scores(NumericMatrix(static_cast<SEXP>(arguments["scores"]))),
     filter(NumericVector(static_cast<SEXP>(arguments["filter"]))),
     sum_filter(sum(NumericVector(static_cast<SEXP>(arguments["filter"]))))
 {
+    start = clone(original_start);
+    end = clone(original_end);
+    scores = clone(original_scores);
     mode = as<int>(arguments["mode"]);
 
     count_bound = as<int>(arguments["count.bound"]);
@@ -333,6 +337,7 @@ PTAProcessor::PTAProcessor(const List arguments) :
     last_node = node_count - 1;
     for (int i = 0; i < node_count; ++i) {
         Node& node = nodes[i];
+        node.alive = true;
         node.prev = i - 1;
         node.id = i;
         node.next = i + 1;
@@ -426,19 +431,45 @@ List PTAProcessor::run() {
     NumericVector newstart(node_count);
     NumericVector newend(node_count);
     NumericMatrix newscores(node_count, scores.ncol());
-    int nodeid = first_node;
-    int i = 0;
-    while (nodeid >= 0) {
-        newstart[i] = start[nodeid];
-        newend[i] = end[nodeid];
-        newscores(i, _) = scores(nodeid, _);
-        nodeid = nodes[nodeid].next;
-        ++i;
+    IntegerVector groups(original_start.size());
+    int groupid = -1;
+    for (int i = 0; i < original_start.size(); ++i) {
+        if (nodes[i].alive) {
+            ++groupid;
+            newstart[groupid] = start[i];
+            newend[groupid] = end[i];
+            newscores(groupid, _) = scores(i, _);
+        }
+        groups[i] = groupid;
     }
 
-    return List::create(
+    List result = List::create(
             Named("start") = newstart,
             Named("end") = newend,
             Named("scores") = newscores,
-            Named("cumulative.error") = cumulative_error);
+            Named("groups") = groups);
+
+    switch (mode) {
+        case PTA_MODE_NORMAL:
+            result["cumulative.error"] = cumulative_error;
+            break;
+
+        case PTA_MODE_CORRELATION:
+            {
+                NumericVector coefficients(original_start.size());
+                NumericVector intercepts(original_start.size());
+                for (int i = 0; i < original_start.size(); ++i) {
+                    const NumericVector original = (*const_cast<NumericMatrix*>(&original_scores))(i, _);
+                    const NumericVector merged = newscores(groups[i], _);
+                    const AffineTransform<NumericVector> t = linear_regression(merged, original).inverse();
+                    coefficients[i] = t.coefficient;
+                    intercepts[i] = t.intercept;
+                }
+                result["coefficients"] = coefficients;
+                result["intercepts"] = intercepts;
+            }
+            break;
+    }
+
+    return result;
 }

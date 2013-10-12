@@ -13,6 +13,7 @@ class __attribute__((visibility("hidden"))) PTAProcessor {
             int prev;
             int next;
             int id;
+            bool alive;
             std::vector<int> positions;
             std::vector<double> keys;
         };
@@ -30,6 +31,10 @@ class __attribute__((visibility("hidden"))) PTAProcessor {
                 return processor->nodes[a].keys[heap] > processor->nodes[b].keys[heap];
             }
         };
+
+        const Rcpp::NumericVector original_start;
+        const Rcpp::NumericVector original_end;
+        const Rcpp::NumericMatrix original_scores;
 
         Rcpp::NumericVector start;
         Rcpp::NumericVector end;
