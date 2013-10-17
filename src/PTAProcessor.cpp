@@ -14,6 +14,66 @@ using namespace std;
         assert(is_heap(heaps[__CHECK_HEAP_heap].begin(), heaps[__CHECK_HEAP_heap].end(), greaters[__CHECK_HEAP_heap]));
 #endif
 
+/// UTILITY FUNCTIONS
+
+static inline double sum_sq(const NumericVector& x) {
+    double sum = 0.0;
+    for (int i = 0; i < x.size(); ++i) {
+        double x_i = x[i];
+        sum += x_i * x_i;
+    }
+    return sum;
+}
+
+struct LessThanIndirect {
+    const NumericVector& x;
+    LessThanIndirect(const NumericVector& x_) : x(x_) {}
+    double operator()(int a, int b) const {
+        return x[a] < x[b];
+    }
+};
+
+inline static NumericVector rank(const NumericVector& x) {
+    NumericVector order(x.size());
+    for (int i = 0; i < order.size(); ++i) {
+        order[i] = i;
+    }
+
+    const LessThanIndirect less_than(x);
+    sort(order.begin(), order.end(), less_than);
+
+    NumericVector r(x.size());
+    for (int i = 0; i < r.size(); ++i) {
+        r[order[i]] = i;
+    }
+    return r;
+}
+
+template <typename T>
+struct AffineTransform {
+    double intercept, coefficient;
+    AffineTransform(double a, double b) : intercept(a), coefficient(b) {}
+
+    inline T operator()(const T& x) const {
+        return intercept + coefficient * x;
+    }
+
+    inline AffineTransform<T> inverse() const {
+        return AffineTransform<T>(-(intercept / coefficient), 1 / coefficient);
+    }
+};
+
+static inline AffineTransform<NumericVector> linear_regression(const NumericVector& x, const NumericVector& y) {
+    double mean_x = mean(x);
+    double mean_y = mean(y);
+    double b = (mean(x * y) - mean_x * mean_y) / (mean(x*x) - mean_x * mean_x);
+    double a = mean_y - b * mean_x;
+    return AffineTransform<NumericVector>(a, b);
+}
+
+
+/// METHODS
+
 double PTAProcessor::length(int interval) const {
     return end[interval] - start[interval] + 1;
 }
@@ -35,10 +95,22 @@ bool PTAProcessor::adjacent(int i, int j) const {
 }
 
 NumericVector PTAProcessor::merged_scores(int i, int j) const {
-    NumericVector scores_i = const_cast<PTAProcessor*>(this)->scores(i, _);
-    NumericVector scores_j = const_cast<PTAProcessor*>(this)->scores(j, _);
-    return (length(i) * scores_i + length(j) * scores_j)
-         / (length(i) + length(j));
+    const NumericVector scores_i = const_cast<PTAProcessor*>(this)->scores(i, _);
+    const NumericVector scores_j = const_cast<PTAProcessor*>(this)->scores(j, _);
+    if (mode != PTA_MODE_CORRELATION) {
+        return (length(i) * scores_i + length(j) * scores_j)
+             / (length(i) + length(j));
+    } else {
+        NumericVector scores_i_m = clone(scores_i);
+        NumericVector scores_j_m = clone(scores_j);
+        if (length(i) >= length(j)) {
+            scores_j_m = linear_regression(scores_i, scores_j).inverse()(scores_j);
+        } else {
+            scores_i_m = linear_regression(scores_j, scores_i).inverse()(scores_i);
+        }
+        return (length(i) * scores_i_m + length(j) * scores_j_m)
+             / (length(i) + length(j));
+    }
 }
 
 double PTAProcessor::key(int heap, int nodeid) const {
@@ -48,13 +120,19 @@ double PTAProcessor::key(int heap, int nodeid) const {
         previd = nodes[previd].prev;
     }
 
+    if (!adjacent(previd, nodeid)) return INFINITY;
+
     switch (mode) {
         case PTA_MODE_NORMAL:
             return dsim(previd, nodeid);
         case PTA_MODE_CORRELATION:
             {
                 double cor = correlation(previd, nodeid);
-                return 1 - cor;
+                if (correlation_absolute) {
+                    return 1 - abs(cor);
+                } else {
+                    return 1 - cor;
+                }
             }
         default:
             throw Rcpp::exception("Bad PTA mode.");
@@ -151,6 +229,7 @@ bool PTAProcessor::merge(int minheap, int minnode) {
         FOR_EACH_HEAP(j) {
             heap_delete(j, node.positions[j]);
         }
+        node.alive = false;
         if (nodeid == first_node) return false;
         nodeid = nodes[nodeid].prev;
     }
@@ -175,40 +254,28 @@ bool PTAProcessor::merge(int minheap, int minnode) {
     return true;
 }
 
-static inline double sum_sq(const NumericVector x) {
-    double sum = 0.0;
-    for (int i = 0; i < x.size(); ++i) {
-        double x_i = x[i];
-        sum += x_i * x_i;
-    }
-    return sum;
-}
-
-PTAProcessor::PTAProcessor(
-        SEXP start_,
-        SEXP end_,
-        SEXP scores_,
-        SEXP count_bound_,
-        SEXP error_bound_,
-        SEXP adjacency_threshold_,
-        SEXP skip_,
-        SEXP mode_,
-        SEXP correlation_bound_,
-        SEXP correlation_spearman_)
-    : start(clone(start_)), end(clone(end_)), scores(clone(scores_))
+PTAProcessor::PTAProcessor(const List arguments) :
+    original_start(NumericVector(static_cast<SEXP>(arguments["start"]))),
+    original_end(NumericVector(static_cast<SEXP>(arguments["end"]))),
+    original_scores(NumericMatrix(static_cast<SEXP>(arguments["scores"])))
 {
-    mode = as<int>(mode_);
+    start = clone(original_start);
+    end = clone(original_end);
+    scores = clone(original_scores);
+    mode = as<int>(arguments["mode"]);
 
-    count_bound = as<int>(count_bound_);
-    error_bound = as<double>(error_bound_);
-    correlation_bound = as<double>(correlation_bound_);
-    correlation_spearman = as<int>(correlation_spearman_);
-    adjacency_threshold = as<double>(adjacency_threshold_);
+    count_bound = as<int>(arguments["count.bound"]);
+    error_bound = as<double>(arguments["error.bound"]);
+    correlation_bound = as<double>(arguments["correlation.bound"]);
+    correlation_spearman = as<int>(arguments["correlation.spearman"]);
+    correlation_absolute = as<int>(arguments["correlation.absolute"]);
+    adjacency_threshold = as<double>(arguments["adjacency.threshold"]);
+
     if ((count_bound > 1) || (mode == PTA_MODE_CORRELATION)) {
         maximum_error = INFINITY;
     } else {
         // calculate maximum error
-        NumericVector score1 = scores(0, _);
+        NumericVector score1 = clone(NumericVector(scores(0, _)));
         double length1 = length(0);
         int first_i = 0;
         maximum_error = 0;
@@ -216,11 +283,11 @@ PTAProcessor::PTAProcessor(
         for (int i = 1; i <= size(); ++i) {
             if ((i < size()) && adjacent(i - 1, i)) {
                 score1 = (length1 * score1 + length(i) * scores(i, _))
-                    / (length1 + length(i));
+                       / (length1 + length(i));
                 length1 += length(i);
             } else {
                 for (int j = first_i; j < i; ++j) {
-                    NumericVector diff = score1 - scores(j, _);
+                    const NumericVector diff = score1 - scores(j, _);
                     maximum_error += length(j) * sum_sq(diff);
                 }
 
@@ -234,7 +301,7 @@ PTAProcessor::PTAProcessor(
         }
     }
 
-    nheaps = as<int>(skip_) + 1;
+    nheaps = as<int>(arguments["skip"]) + 1;
     node_count = size();
     nodes.resize(node_count);
     heaps.resize(nheaps);
@@ -243,6 +310,7 @@ PTAProcessor::PTAProcessor(
     last_node = node_count - 1;
     for (int i = 0; i < node_count; ++i) {
         Node& node = nodes[i];
+        node.alive = true;
         node.prev = i - 1;
         node.id = i;
         node.next = i + 1;
@@ -265,61 +333,40 @@ PTAProcessor::PTAProcessor(
 }
 
 double PTAProcessor::dsim(int i, int j) const {
-    if (!adjacent(i, j)) return INFINITY;
-
     const NumericVector z = merged_scores(i, j);
-    NumericVector diff_i = z - const_cast<PTAProcessor *>(this)->scores(i, _);
-    NumericVector diff_j = z - const_cast<PTAProcessor *>(this)->scores(j, _);
+    const NumericVector diff_i = z - const_cast<PTAProcessor *>(this)->scores(i, _);
+    const NumericVector diff_j = z - const_cast<PTAProcessor *>(this)->scores(j, _);
     return length(i) * sum_sq(diff_i) + length(j) * sum_sq(diff_j);
 }
 
-struct LessThanIndirect {
-    const NumericVector& x;
-    LessThanIndirect(const NumericVector& x_) : x(x_) {}
-    double operator()(int a, int b) {
-        return x[a] < x[b];
-    }
-};
-
-static NumericVector rank(const NumericVector& x) {
-    NumericVector r(x.size());
-    for (int i = 0; i < r.size(); ++i) {
-        r[i] = i;
-    }
-
-    LessThanIndirect less_than(x);
-    sort(r.begin(), r.end(), less_than);
-    return r;
-}
-
 double PTAProcessor::correlation(int x, int y) const {
-    if (!adjacent(x, y)) return 0;
-
-    NumericVector scores_x = const_cast<PTAProcessor *>(this)->scores(x, _);
-    NumericVector scores_y = const_cast<PTAProcessor *>(this)->scores(y, _);
-    int n = scores_x.size();
+    const NumericVector scores_x = const_cast<PTAProcessor*>(this)->scores(x, _);
+    const NumericVector scores_y = const_cast<PTAProcessor*>(this)->scores(y, _);
+    const int n = scores_x.size();
 
     if (correlation_spearman) {
-        scores_x = rank(scores_x);
-        scores_y = rank(scores_y);
+        // Ties in ranks are improbable (and not handled by the ranking
+        // algorithm), so use simplified method to calculate rho.
+        const NumericVector diff = rank(scores_x) - rank(scores_y);
+        return 1 - (6 * sum_sq(diff)) / (n * (n * n - 1));
+    } else {
+        double mean_x = mean(scores_x);
+        double mean_y = mean(scores_y);
+
+        double var_x = 0;
+        double var_y = 0;
+        double covar = 0;
+
+        for (int i = 0; i < n; ++i) {
+            double delta_x = scores_x[i] - mean_x;
+            double delta_y = scores_y[i] - mean_y;
+            var_x += delta_x * delta_x;
+            var_y += delta_y * delta_y;
+            covar += delta_x * delta_y;
+        }
+
+        return covar / sqrt(var_x * var_y);
     }
-
-    double mean_x = accumulate(scores_x.begin(), scores_x.end(), 0.0) / n;
-    double mean_y = accumulate(scores_y.begin(), scores_y.end(), 0.0) / n;
-
-    double var_x = 0;
-    double var_y = 0;
-    double covar = 0;
-
-    for (int i = 0; i < n; ++i) {
-        double delta_x = scores_x[i] - mean_x;
-        double delta_y = scores_y[i] - mean_y;
-        var_x += delta_x * delta_x;
-        var_y += delta_y * delta_y;
-        covar += delta_x * delta_y;
-    }
-
-    return covar / sqrt(var_x * var_y);
 }
 
 List PTAProcessor::run() {
@@ -357,19 +404,45 @@ List PTAProcessor::run() {
     NumericVector newstart(node_count);
     NumericVector newend(node_count);
     NumericMatrix newscores(node_count, scores.ncol());
-    int nodeid = first_node;
-    int i = 0;
-    while (nodeid >= 0) {
-        newstart[i] = start[nodeid];
-        newend[i] = end[nodeid];
-        newscores(i, _) = scores(nodeid, _);
-        nodeid = nodes[nodeid].next;
-        ++i;
+    IntegerVector groups(original_start.size());
+    int groupid = -1;
+    for (int i = 0; i < original_start.size(); ++i) {
+        if (nodes[i].alive) {
+            ++groupid;
+            newstart[groupid] = start[i];
+            newend[groupid] = end[i];
+            newscores(groupid, _) = scores(i, _);
+        }
+        groups[i] = groupid;
     }
 
-    return List::create(
+    List result = List::create(
             Named("start") = newstart,
             Named("end") = newend,
             Named("scores") = newscores,
-            Named("cumulative.error") = cumulative_error);
+            Named("groups") = groups);
+
+    switch (mode) {
+        case PTA_MODE_NORMAL:
+            result["cumulative.error"] = cumulative_error;
+            break;
+
+        case PTA_MODE_CORRELATION:
+            {
+                NumericVector coefficients(original_start.size());
+                NumericVector intercepts(original_start.size());
+                for (int i = 0; i < original_start.size(); ++i) {
+                    const NumericVector original = (*const_cast<NumericMatrix*>(&original_scores))(i, _);
+                    const NumericVector merged = newscores(groups[i], _);
+                    const AffineTransform<NumericVector> t = linear_regression(merged, original).inverse();
+                    coefficients[i] = t.coefficient;
+                    intercepts[i] = t.intercept;
+                }
+                result["coefficients"] = coefficients;
+                result["intercepts"] = intercepts;
+            }
+            break;
+    }
+
+    return result;
 }

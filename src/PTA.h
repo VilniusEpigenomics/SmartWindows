@@ -3,6 +3,6 @@
 
 #include <Rcpp.h>
 
-RcppExport SEXP PTA(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
+RcppExport SEXP PTA(SEXP);
 
 #endif

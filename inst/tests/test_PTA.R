@@ -11,6 +11,11 @@ test_that("normal mode with error.bound works", {
     expect_true(nrow(p) < nrow(d))
 })
 
+test_that("skip works", {
+    p <- PTA(d, skip=1, adjacency.threshold=20, error.bound=0.1)
+    expect_true(nrow(p) < nrow(d))
+})
+
 test_that("normal mode with count.bound works", {
     p <- PTA(d, adjacency.threshold=10, count.bound=10)
     expect_true(nrow(p) == 10)
