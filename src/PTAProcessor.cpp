@@ -97,7 +97,7 @@ bool PTAProcessor::adjacent(int i, int j) const {
 NumericVector PTAProcessor::merged_scores(int i, int j) const {
     const NumericVector scores_i = const_cast<PTAProcessor*>(this)->scores(i, _);
     const NumericVector scores_j = const_cast<PTAProcessor*>(this)->scores(j, _);
-    if (!((mode == PTA_MODE_CORRELATION) && correlation_newmerge)) {
+    if (mode != PTA_MODE_CORRELATION) {
         return (length(i) * scores_i + length(j) * scores_j)
              / (length(i) + length(j));
     } else {
@@ -128,7 +128,7 @@ double PTAProcessor::key(int heap, int nodeid) const {
         case PTA_MODE_CORRELATION:
             {
                 double cor = correlation(previd, nodeid);
-                if (correlation_newmerge) {
+                if (correlation_absolute) {
                     return 1 - abs(cor);
                 } else {
                     return 1 - cor;
@@ -268,7 +268,7 @@ PTAProcessor::PTAProcessor(const List arguments) :
     error_bound = as<double>(arguments["error.bound"]);
     correlation_bound = as<double>(arguments["correlation.bound"]);
     correlation_spearman = as<int>(arguments["correlation.spearman"]);
-    correlation_newmerge = as<int>(arguments["correlation.newmerge"]);
+    correlation_absolute = as<int>(arguments["correlation.absolute"]);
     adjacency_threshold = as<double>(arguments["adjacency.threshold"]);
 
     if ((count_bound > 1) || (mode == PTA_MODE_CORRELATION)) {

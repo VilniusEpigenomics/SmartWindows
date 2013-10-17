@@ -42,7 +42,7 @@ PTA <- function(data, space=1, ...) {
 
 PTA.raw <- function(start, end, scores,
                     count.bound=1, error.bound=Inf, adjacency.threshold=1, skip=0, mode=c("normal", "correlation"),
-                    correlation.bound=-1, correlation.spearman=FALSE, correlation.newmerge=TRUE) {
+                    correlation.bound=-1, correlation.spearman=FALSE, correlation.absolute=TRUE) {
     mode <- match.arg(mode)
     mode <- switch(mode, normal=0, correlation=1)
 
