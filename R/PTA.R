@@ -67,6 +67,22 @@ PTA.raw <- function(start, end, scores,
     result
 }
 
+apply.PTA.result <- function(result, start, end, scores) {
+    stopifnot(length(result$groups) == nrow(scores))
+    len <- end - start
+    grouplen <- result$end - result$start
+    s <- len * if (!is.null(result$coefficients)) {
+        result$coefficients * scores + result$intercept
+    } else {
+        scores
+    }
+    x <- apply(s, 2,
+               function(col) {
+                   tapply(col, result$groups, sum) / grouplen
+                })
+    x
+}
+
 deoverlap <- function(x) {
     result <- deoverlap.raw(start(x), end(x))
     start(x) <- result$start
