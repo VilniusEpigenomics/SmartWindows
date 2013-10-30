@@ -1,5 +1,6 @@
 library(IRanges)
 
+#' @export
 PTA <- function(data, space=1, ...) {
     d.start <- start(data)
     d.end <- end(data)
@@ -40,6 +41,7 @@ PTA <- function(data, space=1, ...) {
     }
 }
 
+#' @export
 PTA.raw <- function(start, end, scores,
                     count.bound=1, error.bound=Inf, adjacency.threshold=1, skip=0, mode=c("normal", "correlation"),
                     correlation.bound=-1, correlation.spearman=FALSE, correlation.absolute=TRUE) {
@@ -67,6 +69,7 @@ PTA.raw <- function(start, end, scores,
     result
 }
 
+#' @export
 apply.PTA.result <- function(result, start, end, scores) {
     stopifnot(length(result$groups) == nrow(scores))
     len <- end - start
@@ -83,6 +86,7 @@ apply.PTA.result <- function(result, start, end, scores) {
     x
 }
 
+#' @export
 deoverlap <- function(x) {
     result <- deoverlap.raw(start(x), end(x))
     start(x) <- result$start
@@ -90,10 +94,12 @@ deoverlap <- function(x) {
     x
 }
 
+#' @export
 deoverlap.raw <- function(start, end) {
     .Call("deoverlap", start, end)
 }
 
+#' @export
 adapt.ranged <- function(ranged.data, dest.ranges, na.rm=FALSE, add.error=FALSE) {
     destcount <- nrow(dest.ranges)
     if (is.null(destcount)) destcount <- length(dest.ranges)
@@ -142,6 +148,7 @@ adapt.ranged <- function(ranged.data, dest.ranges, na.rm=FALSE, add.error=FALSE)
     }
 }
 
+#' @export
 adapt.ranged.raw <- function(src.start, src.end, src.score, dest.start, dest.end) {
     dest.count <- length(dest.start)
     src.count <- length(src.start)
