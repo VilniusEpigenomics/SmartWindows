@@ -77,4 +77,9 @@ test_that("apply.PTA.result merges same data with small difference", {
     p2.scores <- apply.PTA.result(p, d.start, d.end, scores)
     err <- abs(p$scores - p2.scores)
     expect_true(sum(err) / sum(scores) < 1e-16)
+
+    p <- PTA.raw(d.start, d.end, scores, mode="correlation", count.bound=10, skip=1)
+    p2.scores <- apply.PTA.result(p, d.start, d.end, scores)
+    err <- abs(p$scores - p2.scores)
+    expect_true(sum(err) / sum(scores) < 1e-16)
 })

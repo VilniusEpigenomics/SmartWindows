@@ -82,9 +82,14 @@ apply.PTA.result <- function(result, start, end, scores) {
     } else {
         scores
     }
+
+    filter <- result$groups != -1
+    s <- s[filter,]
+    groups <- result$groups[filter]
+
     x <- apply(s, 2,
                function(col) {
-                   tapply(col, result$groups, sum) / grouplen
+                   tapply(col, groups, sum) / grouplen
                 })
     x
 }

@@ -14,6 +14,7 @@ class __attribute__((visibility("hidden"))) PTAProcessor {
             int next;
             int id;
             bool alive;
+            bool skipped;
             std::vector<int> positions;
             std::vector<double> keys;
         };

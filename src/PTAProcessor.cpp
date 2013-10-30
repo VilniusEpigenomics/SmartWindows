@@ -230,6 +230,9 @@ bool PTAProcessor::merge(int minheap, int minnode) {
             heap_delete(j, node.positions[j]);
         }
         node.alive = false;
+        if (i >= 0) {
+            node.skipped = true;
+        }
         if (nodeid == first_node) return false;
         nodeid = nodes[nodeid].prev;
     }
@@ -312,6 +315,7 @@ PTAProcessor::PTAProcessor(const List arguments) :
     for (int i = 0; i < node_count; ++i) {
         Node& node = nodes[i];
         node.alive = true;
+        node.skipped = false;
         node.prev = i - 1;
         node.id = i;
         node.next = i + 1;
@@ -416,7 +420,11 @@ List PTAProcessor::run() {
             newend[groupid] = end[i];
             newscores(groupid, _) = scores(i, _);
         }
-        groups[i] = groupid;
+        if (nodes[i].skipped) {
+            groups[i] == -1;
+        } else {
+            groups[i] = groupid;
+        }
     }
 
     List result = List::create(
