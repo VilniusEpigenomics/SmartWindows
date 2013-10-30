@@ -65,7 +65,7 @@ class __attribute__((visibility("hidden"))) PTAProcessor {
         int first_node;
         int last_node;
 
-        double dsim(int i, int j) const;
+        double merge_error(int i, int j) const;
         double correlation(int i, int j) const;
 
         int parent(int i) const;

@@ -124,7 +124,7 @@ double PTAProcessor::key(int heap, int nodeid) const {
 
     switch (mode) {
         case PTA_MODE_NORMAL:
-            return dsim(previd, nodeid);
+            return merge_error(previd, nodeid);
         case PTA_MODE_CORRELATION:
             {
                 double cor = correlation(previd, nodeid);
@@ -332,7 +332,7 @@ PTAProcessor::PTAProcessor(const List arguments) :
     }
 }
 
-double PTAProcessor::dsim(int i, int j) const {
+double PTAProcessor::merge_error(int i, int j) const {
     const NumericVector z = merged_scores(i, j);
     const NumericVector diff_i = z - const_cast<PTAProcessor *>(this)->scores(i, _);
     const NumericVector diff_j = z - const_cast<PTAProcessor *>(this)->scores(j, _);
