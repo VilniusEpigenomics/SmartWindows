@@ -12,15 +12,20 @@ scores <- cbind(x, y, z)
 d <- RangedData(ranges=IRanges(start=d.start, end=d.end), x=x, y=y, z=z)
 d.gr <- GRanges(seqnames="chr0", ranges=IRanges(start=d.start, end=d.end), x=x, y=y, z=z)
 
-test_that("normal mode with error.bound works", {
-    p <- PTA(d, adjacency.threshold=10, error.bound=0.1)
+test_that("normal mode with error bounds works", {
+    p <- PTA(d, adjacency.threshold=10, cumulative.error.bound=0.1)
     expect_true(nrow(p) < nrow(d))
-    p <- PTA(d.gr, adjacency.threshold=10, error.bound=0.1)
+    p <- PTA(d.gr, adjacency.threshold=10, cumulative.error.bound=0.1)
+    expect_true(length(p) < length(d.gr))
+
+    p <- PTA(d, adjacency.threshold=10, error.bound=100)
+    expect_true(nrow(p) < nrow(d))
+    p <- PTA(d.gr, adjacency.threshold=10, error.bound=100)
     expect_true(length(p) < length(d.gr))
 })
 
 test_that("skip works", {
-    p <- PTA(d, skip=1, adjacency.threshold=20, error.bound=0.1)
+    p <- PTA(d, skip=1, adjacency.threshold=20, cumulative.error.bound=0.1)
     expect_true(nrow(p) < nrow(d))
 })
 

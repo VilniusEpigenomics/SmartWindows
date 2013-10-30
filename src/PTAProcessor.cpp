@@ -266,6 +266,7 @@ PTAProcessor::PTAProcessor(const List arguments) :
 
     count_bound = as<int>(arguments["count.bound"]);
     error_bound = as<double>(arguments["error.bound"]);
+    cumulative_error_bound = as<double>(arguments["cumulative.error.bound"]);
     correlation_bound = as<double>(arguments["correlation.bound"]);
     correlation_spearman = as<int>(arguments["correlation.spearman"]);
     correlation_absolute = as<int>(arguments["correlation.absolute"]);
@@ -370,7 +371,7 @@ double PTAProcessor::correlation(int x, int y) const {
 }
 
 List PTAProcessor::run() {
-    double abs_error_bound = error_bound * maximum_error;
+    double abs_error_bound = cumulative_error_bound * maximum_error;
     double cumulative_error = 0;
     while (node_count > count_bound) {
         int minheap = 0;
@@ -389,7 +390,9 @@ List PTAProcessor::run() {
                break;
            }
         } else {
-            if (cumulative_error + minkey > abs_error_bound) {
+            if ((minkey > error_bound) ||
+                (cumulative_error + minkey > abs_error_bound))
+            {
                 break;
             }
         }

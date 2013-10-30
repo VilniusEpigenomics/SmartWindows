@@ -42,6 +42,7 @@ class __attribute__((visibility("hidden"))) PTAProcessor {
 
         int count_bound;
         double error_bound;
+        double cumulative_error_bound;
         double adjacency_threshold;
         double correlation_bound;
         bool correlation_spearman;
