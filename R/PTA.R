@@ -1,5 +1,7 @@
 library(IRanges)
 
+#' @useDynLib PTA
+
 #' @export
 PTA <- function(data, space=1, ...) {
     d.start <- start(data)
