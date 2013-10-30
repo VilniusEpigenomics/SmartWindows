@@ -24,8 +24,10 @@
         corresponding to the i-th range}
     \item{adjacency.threshold}{ignore gaps of this size when considering whether
         ranges are adjacent.}
-    \item{skip}{allow merging over a given amount of ranges, ignoring the
-        error they introduce. Useful if data has outliers that need to be ignored.}
+    \item{skip}{allow skipping over a given amount of ranges, ignoring the
+        error they introduce. Useful if data has outliers that need to be ignored.
+        Skipping still happens no further than adjacency threshold, which
+        should be increased together with this parameter.}
     \item{count.bound}{stop processing when this count of ranges is reached.}
     \item{mode}{either 'normal' (default) which use sum-squared-error as
         dissimilarity metric, or 'correlation' which uses correlation as
