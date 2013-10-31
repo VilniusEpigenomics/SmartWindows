@@ -288,12 +288,16 @@ bool PTAProcessor::merge(int minheap, int minnode) {
 PTAProcessor::PTAProcessor(const List arguments) :
     original_start(NumericVector(static_cast<SEXP>(arguments["start"]))),
     original_end(NumericVector(static_cast<SEXP>(arguments["end"]))),
-    original_scores(NumericMatrix(static_cast<SEXP>(arguments["scores"])))
+    original_scores(NumericMatrix(static_cast<SEXP>(arguments["scores"]))),
+    sample_parameter(NumericVector(static_cast<SEXP>(arguments["sample.parameter"])))
 {
     start = clone(original_start);
     end = clone(original_end);
     scores = clone(original_scores);
     mode = as<int>(arguments["mode"]);
+
+    sample_parameter_given = sample_parameter.size() > 0;
+    sample_parameter_weight = as<double>(arguments["sample.parameter.weight"]);
 
     count_bound = as<int>(arguments["count.bound"]);
     error_bound = as<double>(arguments["error.bound"]);
