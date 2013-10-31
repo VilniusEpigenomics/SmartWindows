@@ -378,7 +378,17 @@ double PTAProcessor::node_correlation(int x, int y) const {
     const NumericVector scores_x = const_cast<PTAProcessor*>(this)->scores(x, _);
     const NumericVector scores_y = const_cast<PTAProcessor*>(this)->scores(y, _);
 
-    return correlation(scores_x, scores_y, correlation_spearman);
+    if (!sample_parameter_given) {
+        return correlation(scores_x, scores_y, correlation_spearman);
+    } else {
+        const double w_param = sample_parameter_weight;
+        const double w_nodes = 1 - w_param;
+        return
+            pow(correlation(scores_x, scores_y, correlation_spearman), w_nodes) *
+            pow(sqrt(pow(correlation(scores_x, sample_parameter, correlation_spearman), 2) +
+                     pow(correlation(scores_y, sample_parameter, correlation_spearman), 2)),
+                w_param);
+    }
 }
 
 List PTAProcessor::run() {
