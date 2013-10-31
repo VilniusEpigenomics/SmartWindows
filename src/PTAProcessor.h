@@ -41,9 +41,9 @@ class __attribute__((visibility("hidden"))) PTAProcessor {
         Rcpp::NumericVector end;
         Rcpp::NumericMatrix scores;
 
-        const Rcpp::NumericVector sample_parameter;
-        const bool sample_parameter_given;
-        const double sample_parameter_weight;
+        const Rcpp::NumericVector individual_parameter;
+        const bool individual_parameter_given;
+        const double individual_parameter_weight;
 
         const int count_bound;
         const double error_bound;

@@ -48,7 +48,7 @@ PTA.raw <- function(start, end, scores,
                     count.bound=1, error.bound=Inf, cumulative.error.bound=Inf,
                     adjacency.threshold=1, skip=0, mode=c("normal", "correlation"),
                     correlation.bound=-1, correlation.spearman=FALSE, correlation.absolute=TRUE,
-                    sample.parameter=numeric(), sample.parameter.weight=0.5) {
+                    individual.parameter=numeric(), individual.parameter.weight=0.5) {
     mode <- match.arg(mode)
     mode <- switch(mode, normal=0, correlation=1)
 
@@ -64,9 +64,9 @@ PTA.raw <- function(start, end, scores,
         stop("Range and score counts differ")
     }
 
-    sample.parameter.given <- length(sample.parameter) > 0
-    if (sample.parameter.given && length(sample.parameter) != ncol(scores)) {
-        stop("There should be as many sample.parameter values as there are samples.")
+    individual.parameter.given <- length(individual.parameter) > 0
+    if (individual.parameter.given && length(individual.parameter) != ncol(scores)) {
+        stop("There should be as many individual.parameter values as there are samples.")
     }
 
     arguments <- as.list(environment())

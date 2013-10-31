@@ -10,7 +10,8 @@
             error.bound=Inf, cumulative.error.bound=Inf,
             adjacency.threshold=1, skip=0, mode=c("normal", "correlation"),
             correlation.bound=-1, correlation.spearman=FALSE,
-            correlation.absolute=TRUE)
+            correlation.absolute=TRUE,
+            individual.parameter=numeric(), individual.parameter.weight=0.5)
 }
 \arguments{
     \item{data}{either a RangedData or GRanges instance with the data to be
@@ -42,6 +43,13 @@
     \item{correlation.spearman}{use Spearman correlation.}
     \item{correlation.absolute}{if this is true, values are considered similar
         whether they are directly or inversely correlated.}
+    \item{individual.parameter, individual.parameter.weight}{if this is given,
+        correlation is calculated not in the usual way, but using the formula 
+        \deqn{\mathrm{cor}(A, B)^{1-w} (\mathrm{cor}(A, p)^2 + \mathrm{cor}(B, p)^2)^{w / 2}}{%
+              cor(A, B)^(1-w) (cor(A, p)^2 + cor(B, p)^2)^(w / 2)}
+        where p is the parameter vector, A and B are scores for the regions that are being compared and w is the weight.
+
+        This takes into account the ranges' correlation with an external parameter, constant for each individual.}
 }
 \value{
     \code{PTA} returns either RangedData or GRanges, depending on what was

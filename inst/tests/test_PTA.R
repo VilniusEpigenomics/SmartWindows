@@ -48,13 +48,13 @@ test_that("spearman correlation works", {
     expect_true(nrow(p) < nrow(d))
 })
 
-test_that("sample.parameter works", {
+test_that("individual.parameter works", {
     p0 <- PTA(d.gr, adjacency.threshold=10, mode="correlation", correlation.bound=0.8)
-    p <- PTA(d.gr, adjacency.threshold=10, mode="correlation", correlation.bound=0.8, sample.parameter=d.param)
+    p <- PTA(d.gr, adjacency.threshold=10, mode="correlation", correlation.bound=0.8, individual.parameter=d.param)
     expect_false(identical(mcols(p0), mcols(p)))
 
     p0 <- PTA(d.gr, adjacency.threshold=10, mode="correlation", correlation.bound=0.8, correlation.spearman=TRUE)
-    p <- PTA(d.gr, adjacency.threshold=10, mode="correlation", correlation.bound=0.8, correlation.spearman=TRUE, sample.parameter=d.param, sample.parameter.weight=0.7)
+    p <- PTA(d.gr, adjacency.threshold=10, mode="correlation", correlation.bound=0.8, correlation.spearman=TRUE, individual.parameter=d.param, individual.parameter.weight=0.7)
     expect_false(identical(mcols(p0), mcols(p)))
 })
 
