@@ -25,6 +25,28 @@ static inline double sum_sq(const NumericVector& x) {
     return sum;
 }
 
+template <typename T>
+struct AffineTransform {
+    double intercept, coefficient;
+    AffineTransform(double a, double b) : intercept(a), coefficient(b) {}
+
+    inline T operator()(const T& x) const {
+        return intercept + coefficient * x;
+    }
+
+    inline AffineTransform<T> inverse() const {
+        return AffineTransform<T>(-(intercept / coefficient), 1 / coefficient);
+    }
+};
+
+static inline AffineTransform<NumericVector> linear_regression(const NumericVector& x, const NumericVector& y) {
+    double mean_x = mean(x);
+    double mean_y = mean(y);
+    double b = (mean(x * y) - mean_x * mean_y) / (mean(x*x) - mean_x * mean_x);
+    double a = mean_y - b * mean_x;
+    return AffineTransform<NumericVector>(a, b);
+}
+
 struct LessThanIndirect {
     const NumericVector& x;
     LessThanIndirect(const NumericVector& x_) : x(x_) {}
@@ -49,26 +71,32 @@ inline static NumericVector rank(const NumericVector& x) {
     return r;
 }
 
-template <typename T>
-struct AffineTransform {
-    double intercept, coefficient;
-    AffineTransform(double a, double b) : intercept(a), coefficient(b) {}
+static inline double correlation(const NumericVector &x, const NumericVector &y, bool spearman = false) {
+    const int n = x.size();
 
-    inline T operator()(const T& x) const {
-        return intercept + coefficient * x;
+    if (spearman) {
+        // Ties in ranks are improbable (and not handled by the ranking
+        // algorithm), so use simplified method to calculate rho.
+        const NumericVector diff = rank(x) - rank(y);
+        return 1 - (6 * sum_sq(diff)) / (n * (n * n - 1));
+    } else {
+        double mean_x = mean(x);
+        double mean_y = mean(y);
+
+        double var_x = 0;
+        double var_y = 0;
+        double covar = 0;
+
+        for (int i = 0; i < n; ++i) {
+            double delta_x = x[i] - mean_x;
+            double delta_y = y[i] - mean_y;
+            var_x += delta_x * delta_x;
+            var_y += delta_y * delta_y;
+            covar += delta_x * delta_y;
+        }
+
+        return covar / sqrt(var_x * var_y);
     }
-
-    inline AffineTransform<T> inverse() const {
-        return AffineTransform<T>(-(intercept / coefficient), 1 / coefficient);
-    }
-};
-
-static inline AffineTransform<NumericVector> linear_regression(const NumericVector& x, const NumericVector& y) {
-    double mean_x = mean(x);
-    double mean_y = mean(y);
-    double b = (mean(x * y) - mean_x * mean_y) / (mean(x*x) - mean_x * mean_x);
-    double a = mean_y - b * mean_x;
-    return AffineTransform<NumericVector>(a, b);
 }
 
 
@@ -127,7 +155,7 @@ double PTAProcessor::key(int heap, int nodeid) const {
             return merge_error(previd, nodeid);
         case PTA_MODE_CORRELATION:
             {
-                double cor = correlation(previd, nodeid);
+                double cor = node_correlation(previd, nodeid);
                 if (correlation_absolute) {
                     return 1 - abs(cor);
                 } else {
@@ -344,34 +372,11 @@ double PTAProcessor::merge_error(int i, int j) const {
     return length(i) * sum_sq(diff_i) + length(j) * sum_sq(diff_j);
 }
 
-double PTAProcessor::correlation(int x, int y) const {
+double PTAProcessor::node_correlation(int x, int y) const {
     const NumericVector scores_x = const_cast<PTAProcessor*>(this)->scores(x, _);
     const NumericVector scores_y = const_cast<PTAProcessor*>(this)->scores(y, _);
-    const int n = scores_x.size();
 
-    if (correlation_spearman) {
-        // Ties in ranks are improbable (and not handled by the ranking
-        // algorithm), so use simplified method to calculate rho.
-        const NumericVector diff = rank(scores_x) - rank(scores_y);
-        return 1 - (6 * sum_sq(diff)) / (n * (n * n - 1));
-    } else {
-        double mean_x = mean(scores_x);
-        double mean_y = mean(scores_y);
-
-        double var_x = 0;
-        double var_y = 0;
-        double covar = 0;
-
-        for (int i = 0; i < n; ++i) {
-            double delta_x = scores_x[i] - mean_x;
-            double delta_y = scores_y[i] - mean_y;
-            var_x += delta_x * delta_x;
-            var_y += delta_y * delta_y;
-            covar += delta_x * delta_y;
-        }
-
-        return covar / sqrt(var_x * var_y);
-    }
+    return correlation(scores_x, scores_y, correlation_spearman);
 }
 
 List PTAProcessor::run() {
