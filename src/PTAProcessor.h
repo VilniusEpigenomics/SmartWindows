@@ -42,21 +42,21 @@ class __attribute__((visibility("hidden"))) PTAProcessor {
         Rcpp::NumericMatrix scores;
 
         const Rcpp::NumericVector sample_parameter;
-        bool sample_parameter_given;
-        double sample_parameter_weight;
+        const bool sample_parameter_given;
+        const double sample_parameter_weight;
 
-        int count_bound;
-        double error_bound;
-        double cumulative_error_bound;
-        double adjacency_threshold;
-        double correlation_bound;
-        bool correlation_spearman;
-        bool correlation_absolute;
+        const int count_bound;
+        const double error_bound;
+        const double cumulative_error_bound;
+        const double adjacency_threshold;
+        const double correlation_bound;
+        const bool correlation_spearman;
+        const bool correlation_absolute;
+
+        const int mode;
 
         int minimum_count;
         double maximum_error;
-
-        int mode;
 
         inline int size() const { return start.size(); }
         double length(int interval) const;
@@ -64,7 +64,7 @@ class __attribute__((visibility("hidden"))) PTAProcessor {
         Rcpp::NumericVector merged_scores(int i, int j) const;
 
         std::vector<NodeGreater> greaters;
-        int nheaps;
+        const int nheaps;
         std::vector< std::vector<int> > heaps;
         std::vector<Node> nodes;
         int node_count;

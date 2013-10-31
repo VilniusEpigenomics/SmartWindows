@@ -64,7 +64,8 @@ PTA.raw <- function(start, end, scores,
         stop("Range and score counts differ")
     }
 
-    if (length(sample.parameter) > 0 && length(sample.parameter) != ncol(scores)) {
+    sample.parameter.given <- length(sample.parameter) > 0
+    if (sample.parameter.given && length(sample.parameter) != ncol(scores)) {
         stop("There should be as many sample.parameter values as there are samples.")
     }
 

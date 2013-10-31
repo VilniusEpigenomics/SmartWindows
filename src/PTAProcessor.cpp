@@ -40,10 +40,10 @@ struct AffineTransform {
 };
 
 static inline AffineTransform<NumericVector> linear_regression(const NumericVector& x, const NumericVector& y) {
-    double mean_x = mean(x);
-    double mean_y = mean(y);
-    double b = (mean(x * y) - mean_x * mean_y) / (mean(x*x) - mean_x * mean_x);
-    double a = mean_y - b * mean_x;
+    const double mean_x = mean(x);
+    const double mean_y = mean(y);
+    const double b = (mean(x * y) - mean_x * mean_y) / (mean(x*x) - mean_x * mean_x);
+    const double a = mean_y - b * mean_x;
     return AffineTransform<NumericVector>(a, b);
 }
 
@@ -80,8 +80,8 @@ static inline double correlation(const NumericVector &x, const NumericVector &y,
         const NumericVector diff = rank(x) - rank(y);
         return 1 - (6 * sum_sq(diff)) / (n * (n * n - 1));
     } else {
-        double mean_x = mean(x);
-        double mean_y = mean(y);
+        const double mean_x = mean(x);
+        const double mean_y = mean(y);
 
         double var_x = 0;
         double var_y = 0;
@@ -115,7 +115,7 @@ bool PTAProcessor::adjacent(int i, int j) const {
         std::swap(i, j);
     }
 
-    double distance = start[j] - end[i];
+    const double distance = start[j] - end[i];
     if (distance < 0) {
         throw Rcpp::exception("Intervals should be sorted and non-overlapping.");
     }
@@ -289,23 +289,22 @@ PTAProcessor::PTAProcessor(const List arguments) :
     original_start(NumericVector(static_cast<SEXP>(arguments["start"]))),
     original_end(NumericVector(static_cast<SEXP>(arguments["end"]))),
     original_scores(NumericMatrix(static_cast<SEXP>(arguments["scores"]))),
-    sample_parameter(NumericVector(static_cast<SEXP>(arguments["sample.parameter"])))
+    sample_parameter(NumericVector(static_cast<SEXP>(arguments["sample.parameter"]))),
+    sample_parameter_given(as<int>(arguments["sample.parameter.given"])),
+    sample_parameter_weight(as<double>(arguments["sample.parameter.weight"])),
+    count_bound(as<int>(arguments["count.bound"])),
+    error_bound(as<double>(arguments["error.bound"])),
+    cumulative_error_bound(as<double>(arguments["cumulative.error.bound"])),
+    correlation_bound(as<double>(arguments["correlation.bound"])),
+    correlation_spearman(as<int>(arguments["correlation.spearman"])),
+    correlation_absolute(as<int>(arguments["correlation.absolute"])),
+    adjacency_threshold(as<double>(arguments["adjacency.threshold"])),
+    mode(as<int>(arguments["mode"])),
+    nheaps(as<int>(arguments["skip"]) + 1)
 {
     start = clone(original_start);
     end = clone(original_end);
     scores = clone(original_scores);
-    mode = as<int>(arguments["mode"]);
-
-    sample_parameter_given = sample_parameter.size() > 0;
-    sample_parameter_weight = as<double>(arguments["sample.parameter.weight"]);
-
-    count_bound = as<int>(arguments["count.bound"]);
-    error_bound = as<double>(arguments["error.bound"]);
-    cumulative_error_bound = as<double>(arguments["cumulative.error.bound"]);
-    correlation_bound = as<double>(arguments["correlation.bound"]);
-    correlation_spearman = as<int>(arguments["correlation.spearman"]);
-    correlation_absolute = as<int>(arguments["correlation.absolute"]);
-    adjacency_threshold = as<double>(arguments["adjacency.threshold"]);
 
     if ((count_bound > 1) || (mode == PTA_MODE_CORRELATION)) {
         maximum_error = INFINITY;
@@ -337,7 +336,6 @@ PTAProcessor::PTAProcessor(const List arguments) :
         }
     }
 
-    nheaps = as<int>(arguments["skip"]) + 1;
     node_count = size();
     nodes.resize(node_count);
     heaps.resize(nheaps);
@@ -384,7 +382,7 @@ double PTAProcessor::node_correlation(int x, int y) const {
 }
 
 List PTAProcessor::run() {
-    double abs_error_bound = cumulative_error_bound * maximum_error;
+    const double abs_error_bound = cumulative_error_bound * maximum_error;
     double cumulative_error = 0;
     while (node_count > count_bound) {
         int minheap = 0;
