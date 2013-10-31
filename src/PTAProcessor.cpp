@@ -421,7 +421,7 @@ List PTAProcessor::run() {
             newscores(groupid, _) = scores(i, _);
         }
         if (nodes[i].skipped) {
-            groups[i] == -1;
+            groups[i] = -1;
         } else {
             groups[i] = groupid;
         }
@@ -443,11 +443,16 @@ List PTAProcessor::run() {
                 NumericVector coefficients(original_start.size());
                 NumericVector intercepts(original_start.size());
                 for (int i = 0; i < original_start.size(); ++i) {
-                    const NumericVector original = (*const_cast<NumericMatrix*>(&original_scores))(i, _);
-                    const NumericVector merged = newscores(groups[i], _);
-                    const AffineTransform<NumericVector> t = linear_regression(merged, original).inverse();
-                    coefficients[i] = t.coefficient;
-                    intercepts[i] = t.intercept;
+                    if (groups[i] != -1) {
+                        const NumericVector original = (*const_cast<NumericMatrix*>(&original_scores))(i, _);
+                        const NumericVector merged = newscores(groups[i], _);
+                        const AffineTransform<NumericVector> t = linear_regression(merged, original).inverse();
+                        coefficients[i] = t.coefficient;
+                        intercepts[i] = t.intercept;
+                    } else {
+                        coefficients[i] = 1;
+                        intercepts[i] = 0;
+                    }
                 }
                 result["coefficients"] = coefficients;
                 result["intercepts"] = intercepts;

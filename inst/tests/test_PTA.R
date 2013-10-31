@@ -3,10 +3,11 @@ context("PTA")
 library(GenomicRanges)
 
 set.seed(123)
-x <- rnorm(20)
-y <- x + 0.5 * rnorm(20)
-z <- 0.3 * x - 0.3 * y + 0.4 * rnorm(20)
-d.start <- (1:20)*10
+n <- 100
+x <- rnorm(n)
+y <- x + 0.5 * rnorm(n)
+z <- 0.3 * x - 0.3 * y + 0.4 * rnorm(n)
+d.start <- (1:n)*10
 d.end <- d.start + 6
 scores <- cbind(x, y, z)
 d <- RangedData(ranges=IRanges(start=d.start, end=d.end), x=x, y=y, z=z)
@@ -65,8 +66,22 @@ test_that("PTA.raw doesn't change arguments", {
     expect_equal(score, 1:10) 
 })
 
+test_that("skipped nodes have group -1", {
+    p <- PTA.raw(d.start, d.end, scores, adjacency.threshold=20, skip=1, mode="correlation", correlation.bound=0.8)
+    expect_true(length(unique(p$groups)) == 2 + max(p$groups))
+    expect_true(-1 %in% p$groups)
+
+    diff.skipped <- diff(p$groups == -1)
+    for (i in 1:length(diff.skipped)) {
+        if (diff.skipped[i] == 1) {
+            expect_true(diff.skipped[i + 1] == -1)
+        }
+    }
+})
+
+
 test_that("apply.PTA.result works", {
-    scores2 <- 2 * scores + rnorm(20)
+    scores2 <- 2 * scores + rnorm(n)
     p <- PTA.raw(d.start, d.end, scores, adjacency.threshold=10, mode="correlation", count.bound=10)
     p2.scores <- apply.PTA.result(p, d.start, d.end, scores2)
     expect_true(all(dim(p$scores) == dim(p2.scores)))
