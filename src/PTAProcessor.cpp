@@ -385,9 +385,9 @@ double PTAProcessor::node_correlation(int x, int y) const {
         const double w_nodes = 1 - w_param;
         return
             pow(correlation(scores_x, scores_y, correlation_spearman), w_nodes) *
-            pow(sqrt(pow(correlation(scores_x, individual_parameter, correlation_spearman), 2) +
-                     pow(correlation(scores_y, individual_parameter, correlation_spearman), 2)),
-                w_param);
+            pow(pow(correlation(scores_x, individual_parameter, correlation_spearman), 2) +
+                pow(correlation(scores_y, individual_parameter, correlation_spearman), 2),
+                w_param / 2);
     }
 }
 
