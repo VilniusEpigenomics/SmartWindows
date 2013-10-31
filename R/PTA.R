@@ -76,7 +76,6 @@ PTA.raw <- function(start, end, scores,
 apply.PTA.result <- function(result, start, end, scores) {
     stopifnot(length(result$groups) == nrow(scores))
     len <- end - start
-    grouplen <- result$end - result$start
     s <- len * if (!is.null(result$coefficients)) {
         result$coefficients * scores + result$intercept
     } else {
@@ -86,6 +85,8 @@ apply.PTA.result <- function(result, start, end, scores) {
     filter <- result$groups != -1
     s <- s[filter,]
     groups <- result$groups[filter]
+
+    grouplen <- tapply(len, groups, sum)
 
     x <- apply(s, 2,
                function(col) {
