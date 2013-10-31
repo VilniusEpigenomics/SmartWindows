@@ -11,6 +11,7 @@ d.start <- (1:n)*10
 d.end <- d.start + 6
 scores <- cbind(x, y, z)
 d <- RangedData(ranges=IRanges(start=d.start, end=d.end), x=x, y=y, z=z)
+d.param <- 1:3
 d.gr <- GRanges(seqnames="chr0", ranges=IRanges(start=d.start, end=d.end), x=x, y=y, z=z)
 
 test_that("normal mode with error bounds works", {
@@ -46,6 +47,17 @@ test_that("spearman correlation works", {
     p <- PTA(d, adjacency.threshold=10, mode="correlation", correlation.bound=0.8, correlation.spearman=TRUE)
     expect_true(nrow(p) < nrow(d))
 })
+
+test_that("sample.parameter works", {
+    p0 <- PTA(d.gr, adjacency.threshold=10, mode="correlation", correlation.bound=0.8)
+    p <- PTA(d.gr, adjacency.threshold=10, mode="correlation", correlation.bound=0.8, sample.parameter=d.param)
+    expect_false(identical(mcols(p0), mcols(p)))
+
+    p0 <- PTA(d.gr, adjacency.threshold=10, mode="correlation", correlation.bound=0.8, correlation.spearman=TRUE)
+    p <- PTA(d.gr, adjacency.threshold=10, mode="correlation", correlation.bound=0.8, correlation.spearman=TRUE, sample.parameter=d.param, sample.parameter.weight=0.7)
+    expect_false(identical(mcols(p0), mcols(p)))
+})
+
 
 test_that("PTA.raw works", {
     p <- PTA.raw(d.start, d.end, scores, adjacency.threshold=10, count.bound=10)
