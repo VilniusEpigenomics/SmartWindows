@@ -22,7 +22,7 @@ ranged data, but this package supports other metrics for merging, like
 correlation and absolute value with the \code{\link{PTA}} function.
 
 Also contains helper functions \code{\link{deoverlap}} and
-\code{\link{adapt.ranged}}.
+\code{\link{adaptRanged}}.
 }
 \author{
 Kiprianas Spiridonovas
@@ -35,9 +35,4 @@ Gordevičius, Juozas, Johann Gamper, and Michael Böhlen. "Parsimonious temporal
 \keyword{ package }
 \seealso{
 \link{IRanges}, \link[GenomicRanges:GenomicRanges]{GenomicRanges}
-}
-\examples{
-set.seed(123)
-PTA(RangedData(ranges=IRanges(start=seq(0, 99, 10), width=11), score=rnorm(10)),
-    error.bound=0.1)
 }

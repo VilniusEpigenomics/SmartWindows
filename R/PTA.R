@@ -54,6 +54,8 @@ PTA <- function(start=NULL, end=NULL, scores=NULL, data=NULL, chr=NULL,
 
     colnames(result$scores) <- colnames(scores)
 
+    result$groups <- result$groups + 1
+
     result
 }
 

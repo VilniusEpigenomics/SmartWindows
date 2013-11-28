@@ -1,15 +1,15 @@
-\name{apply.PTA.result}
-\alias{apply.PTA.result}
+\name{applyPTAResult}
+\alias{applyPTAResult}
 
-\title{apply.PTA.result}
+\title{applyPTAResult}
 \description{Apply ranges found with PTA to a different score matrix}
 \usage{
-    apply.PTA.result(result, start, end, scores)
+    applyPTAResult(result, start, end, scores)
 }
 \arguments{
-    \item{result}{result of previous PTA.raw application.}
+    \item{result}{result of previous PTA application.}
     \item{start, end}{vectors of original ranges (should be the same that were
-        passed to PTA.raw).}
+        passed to PTA).}
     \item{scores}{matrix of scores with rows corresponding to ranges.}
 }
 \value{
