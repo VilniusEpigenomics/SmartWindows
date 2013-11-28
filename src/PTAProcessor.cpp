@@ -289,16 +289,16 @@ PTAProcessor::PTAProcessor(const List arguments) :
     original_start(NumericVector(static_cast<SEXP>(arguments["start"]))),
     original_end(NumericVector(static_cast<SEXP>(arguments["end"]))),
     original_scores(NumericMatrix(static_cast<SEXP>(arguments["scores"]))),
-    individual_parameter(NumericVector(static_cast<SEXP>(arguments["individual.parameter"]))),
-    individual_parameter_given(as<int>(arguments["individual.parameter.given"])),
-    individual_parameter_weight(as<double>(arguments["individual.parameter.weight"])),
-    count_bound(as<int>(arguments["count.bound"])),
-    error_bound(as<double>(arguments["error.bound"])),
-    cumulative_error_bound(as<double>(arguments["cumulative.error.bound"])),
-    correlation_bound(as<double>(arguments["correlation.bound"])),
-    correlation_spearman(as<int>(arguments["correlation.spearman"])),
-    correlation_absolute(as<int>(arguments["correlation.absolute"])),
-    adjacency_threshold(as<double>(arguments["adjacency.threshold"])),
+    individual_parameter(NumericVector(static_cast<SEXP>(arguments["individualParameter"]))),
+    individual_parameter_given(as<int>(arguments["individualParameterGiven"])),
+    individual_parameter_weight(as<double>(arguments["individualParameterWeight"])),
+    count_bound(as<int>(arguments["countBound"])),
+    error_bound(as<double>(arguments["errorBound"])),
+    cumulative_error_bound(as<double>(arguments["cumulativeErrorBound"])),
+    correlation_bound(as<double>(arguments["correlationBound"])),
+    correlation_spearman(as<int>(arguments["correlationSpearman"])),
+    correlation_absolute(as<int>(arguments["correlationAbsolute"])),
+    adjacency_threshold(as<double>(arguments["adjacencyThreshold"])),
     mode(as<int>(arguments["mode"])),
     nheaps(as<int>(arguments["skip"]) + 1)
 {
@@ -452,7 +452,7 @@ List PTAProcessor::run() {
 
     switch (mode) {
         case PTA_MODE_NORMAL:
-            result["cumulative.error"] = cumulative_error;
+            result["cumulativeError"] = cumulative_error;
             break;
 
         case PTA_MODE_CORRELATION:
