@@ -71,15 +71,15 @@ test_that("PTA doesn't change arguments", {
     expect_equal(score, 1:10) 
 })
 
-test_that("skipped nodes have group -1", {
+test_that("skipped nodes have group 0", {
     p <- PTA(dStart, dEnd, scores, adjacencyThreshold=20, skip=1, mode="correlation", correlationBound=0.8)
-    expect_true(length(unique(p$groups)) == 2 + max(p$groups))
-    expect_true(-1 %in% p$groups)
+    expect_equal(length(unique(p$groups)), 1 + max(p$groups))
+    expect_true(0 %in% p$groups)
 
-    diffSkipped <- diff(p$groups == -1)
-    for (i in 1:length(diffSkipped)) {
+    diffSkipped <- diff(p$groups == 0)
+    for (i in 1:length(diffSkipped - 1)) {
         if (diffSkipped[i] == 1) {
-            expect_true(diffSkipped[i + 1] == -1)
+            expect_equal(diffSkipped[i + 1], -1)
         }
     }
 })
