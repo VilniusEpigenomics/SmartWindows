@@ -69,14 +69,14 @@ applyPTAResult <- function(result, start, end, scores) {
         scores
     }
 
-    filter <- result$groups != -1
+    filter <- result$groups != 0
     s <- s[filter,]
     groups <- result$groups[filter]
     len <- len[filter]
 
     grouplen <- tapply(len, groups, sum)
 
-    x <- apply(s, 2,
+    x <- apply(as.matrix(s), 2,
                function(col) {
                    tapply(col, groups, sum) / grouplen
                 })
