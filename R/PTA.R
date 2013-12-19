@@ -1,33 +1,63 @@
 #' @useDynLib PTA
 
-extractGRanges <- function(data, seqname=NULL) {
-    if (is.null(seqname)) {
-        seqname <- GenomicRanges::seqlevels(data)[[1]]
-    }
+extractGRanges <- function(data) {
     d <- list()
     d$start <- GenomicRanges::start(data)
     d$end <- GenomicRanges::end(data)
-    s <- GenomicRanges::mcols(data[seqnames(data) == seqname])
-    d$scores <- as.matrix(as.data.frame(s))
+    d$chr <- BiocGenerics::as.vector(GenomicRanges::seqnames(data))
+    d$scores <- IRanges::as.matrix(GenomicRanges::mcols(data))
     d
 }
 
 #' @export
-PTA <- function(start=NULL, end=NULL, scores=NULL, data=NULL, chr=NULL,
-                countBound=1, errorBound=Inf, cumulativeErrorBound=Inf,
-                adjacencyThreshold=1, skip=0, mode=c("normal", "correlation"),
-                correlationBound=-1, correlationSpearman=FALSE, correlationAbsolute=TRUE,
-                individualParameter=numeric(), individualParameterWeight=0.5) {
+PTA <- function(start=NULL, end=NULL, scores=NULL, chr=NULL, data=NULL, ...) {
+    if (class(data) == "GRanges") {
+        data <- extractGRanges(data)
+    }
+
     if (class(start) == "GRanges") {
-        data <- extractGRanges(start, chr)
+        data <- extractGRanges(start)
     }
 
     if (!is.null(data)) {
         start <- data$start
         end <- data$end
         scores <- data$scores
+        chr <- data$chr
     }
 
+    if (is.null(chr) || length(unique(chr)) == 1) {
+        PTA1(start, end, scores, ...)
+    } else {
+        result <- list(chr=c(),
+                       start=c(),
+                       end=c(),
+                       scores=matrix(nrow=0, ncol=ncol(scores)),
+                       coefficients=c(),
+                       intercepts=c())
+        for (chr1 in sort(unique(chr))) {
+            pta <- PTA1(start[chr == chr1],
+                        end[chr == chr1],
+                        scores[chr == chr1, ],
+                        ...)
+            result$chr <- c(result$chr, rep(chr1, length(pta$start)))
+            result$start <- c(result$start, pta$start)
+            result$end <- c(result$end, pta$end)
+            result$scores <- rbind(result$scores, pta$scores)
+            result$coefficients <- c(result$coefficients, pta$coefficients)
+            result$intercepts <- c(result$intercepts, pta$intercepts)
+        }
+        result$chr <- factor(result$chr)
+        result
+    }
+}
+
+PTA1 <- function(start, end, scores,
+                 countBound=1, errorBound=Inf, cumulativeErrorBound=Inf,
+                 adjacencyThreshold=1, skip=0, mode=c("normal", "correlation"),
+                 correlationBound=-1, correlationSpearman=FALSE, correlationAbsolute=TRUE,
+                 individualParameter=numeric(), individualParameterWeight=0.5)
+{
     mode <- match.arg(mode)
     mode <- switch(mode, normal=0, correlation=1)
 
@@ -60,7 +90,45 @@ PTA <- function(start=NULL, end=NULL, scores=NULL, data=NULL, chr=NULL,
 }
 
 #' @export
-applyPTAResult <- function(result, start, end, scores) {
+applyPTAResult <- function(result,
+                           start=NULL, end=NULL, scores=NULL, chr=NULL, data=NULL)
+{
+    if (class(data) == "GRanges") {
+        data <- extractGRanges(data)
+    }
+
+    if (class(start) == "GRanges") {
+        data <- extractGRanges(start)
+    }
+
+    if (!is.null(data)) {
+        start <- data$start
+        end <- data$end
+        scores <- data$scores
+        chr <- data$chr
+    }
+
+    if (is.null(chr) || length(unique(chr)) == 1) {
+        applyPTAResult1(result, start, end, scores)
+    } else {
+        outscores <- matrix(nrow=nrow(result$scores), ncol=ncol(scores))
+        for (chr1 in sort(unique(chr))) {
+            subpta <- list(
+                groups = result$groups[result$chr == chr1],
+                coefficients = result$coefficients[result$chr == chr1],
+                intercept = result$intercept[result$chr == chr1]
+            )
+            newscores <- applyPTAResult1(subpta,
+                                         start[chr == chr1],
+                                         end[chr == chr1],
+                                         scores[chr == chr1, ])
+            outscores[result$chr == chr1,] <- newscores
+        }
+        outscores
+    }
+}
+
+applyPTAResult1 <- function(result, start, end, scores) {
     stopifnot(length(result$groups) == nrow(scores))
     len <- end - start
     s <- len * if (!is.null(result$coefficients)) {

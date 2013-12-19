@@ -4,11 +4,11 @@
 \title{applyPTAResult}
 \description{Apply ranges found with PTA to a different score matrix}
 \usage{
-    applyPTAResult(result, start, end, scores)
+    applyPTAResult(result, start, end, scores, chr=NULL)
 }
 \arguments{
     \item{result}{result of previous PTA application.}
-    \item{start, end}{vectors of original ranges (should be the same that were
+    \item{start, end, chr}{vectors of original ranges (should be the same that were
         passed to PTA).}
     \item{scores}{matrix of scores with rows corresponding to ranges.}
 }

@@ -4,11 +4,11 @@
 \title{PTA}
 \description{Aggregate ranged data in various ways}
 \usage{
-    PTA(granges, chr=NULL, ...)
+    PTA(granges, ...)
 
     PTA(data, ...)
     
-    PTA(start, end, scores,
+    PTA(start, end, scores, chr=NULL,
         countBound=1, errorBound=Inf, cumulativeErrorBound=Inf,
         adjacencyThreshold=1, skip=0, mode=c("normal", "correlation"),
         correlationBound=-1, correlationSpearman=FALSE,
@@ -16,13 +16,13 @@
         individualParameter=numeric(), individualParameterWeight=0.5)
 }
 \arguments{
-    \item{granges, chr}{a GRanges object with chr naming the seqname to extract
-        and process.}
-    \item{start, end}{vectors of beginnings and ends of ranges. The ranges
-        should be sorted and non-overlapping (see \code{\link{deoverlap}}).}
+    \item{granges}{a GRanges object.}
+    \item{start, end, chr}{vectors of beginnings, ends and possibly chromosome
+        (or other kind of group) of ranges. The ranges should be sorted and
+        non-overlapping (see \code{\link{deoverlap}}).}
     \item{scores}{matrix of values, the i-th row of which is a vector
         corresponding to the i-th range.}
-    \item{data}{a list containing elements named start, end, scores
+    \item{data}{a list containing elements named start, end, scores and chr
         corresponding to the arguments.}
     \item{adjacencyThreshold}{ignore gaps of this size when considering whether
         ranges are adjacent.}
@@ -53,8 +53,8 @@
         This takes into account the ranges' correlation with an external parameter, constant for each individual.}
 }
 \value{
-    \code{PTA} returns a list. The items \code{start}, \code{end} and
-    \code{scores} which contain processed data.
+    \code{PTA} returns a list. The items \code{start}, \code{end}, \code{chr}
+    and \code{scores} which contain processed data.
 
     The item \code{groups} contains the index (1-based) of the merged range
     that each original range belongs to. An index of 0 means that the range was
