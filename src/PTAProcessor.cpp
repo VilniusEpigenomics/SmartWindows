@@ -1,5 +1,7 @@
 #include <algorithm>
+#include <sstream>
 #include <cassert>
+#include <cmath>
 #include "PTAProcessor.h"
 
 using namespace Rcpp;
@@ -96,6 +98,17 @@ static inline double correlation(const NumericVector &x, const NumericVector &y,
         }
 
         return covar / sqrt(var_x * var_y);
+    }
+}
+
+static void assert_is_finite(const NumericVector &x, int row) {
+    for (int i = 0; i < x.size(); ++i) {
+        double xi = x[i];
+        if (!std::isfinite(xi)) {
+            std::stringstream msg;
+            msg << "Input contains a NaN or infinite value at row " << row + 1 << ", index " << i + 1 << ".";
+            throw Rcpp::exception(msg.str().c_str());
+        }
     }
 }
 
@@ -343,6 +356,7 @@ PTAProcessor::PTAProcessor(const List arguments) :
     first_node = 0;
     last_node = node_count - 1;
     for (int i = 0; i < node_count; ++i) {
+        assert_is_finite(scores(i, _), i);
         Node& node = nodes[i];
         node.alive = true;
         node.skipped = false;

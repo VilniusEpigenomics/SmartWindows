@@ -84,6 +84,16 @@ test_that("skipped nodes have group 0", {
     }
 })
 
+test_that("NaN and infinite values return an error", {
+    scoresInf <- scores
+    scoresInf[1, 1] <- 1.0/0
+    expect_that(PTA(dStart, dEnd, scoresInf), throws_error())
+    scoresInf[1, 1] <- -1.0/0
+    expect_that(PTA(dStart, dEnd, scoresInf), throws_error())
+    scoresInf[1, 1] <- 0.0/0
+    expect_that(PTA(dStart, dEnd, scoresInf), throws_error())
+})
+
 
 test_that("applyPTAResult works", {
     scores2 <- 2 * scores + rnorm(n)
