@@ -90,14 +90,20 @@ static inline double correlation(const NumericVector &x, const NumericVector &y,
         double covar = 0;
 
         for (int i = 0; i < n; ++i) {
-            double delta_x = x[i] - mean_x;
-            double delta_y = y[i] - mean_y;
+            const double delta_x = x[i] - mean_x;
+            const double delta_y = y[i] - mean_y;
             var_x += delta_x * delta_x;
             var_y += delta_y * delta_y;
             covar += delta_x * delta_y;
         }
 
-        return covar / sqrt(var_x * var_y);
+        const double max_covar = std::sqrt(var_x * var_y);
+
+        if (max_covar == 0) {
+            return 0;
+        }
+
+        return covar / max_covar;
     }
 }
 
