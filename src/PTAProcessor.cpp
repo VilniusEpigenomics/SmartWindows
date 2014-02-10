@@ -176,7 +176,7 @@ double PTAProcessor::key(int heap, int nodeid) const {
             {
                 double cor = node_correlation(previd, nodeid);
                 if (correlation_absolute) {
-                    return 1 - abs(cor);
+                    return 1 - std::abs(cor);
                 } else {
                     return 1 - cor;
                 }
