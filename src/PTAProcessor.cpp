@@ -1,8 +1,8 @@
 #include <algorithm>
 #include <cassert>
 #include "PTAProcessor.h"
+
 using namespace Rcpp;
-using namespace std;
 
 #define FOR_EACH_HEAP(var) for (int (var) = 0; (var) < nheaps; ++(var))
 
@@ -11,7 +11,7 @@ using namespace std;
 #else
 #define CHECK_HEAP \
     for (int __CHECK_HEAP_heap = 0; __CHECK_HEAP_heap < nheaps; ++__CHECK_HEAP_heap) \
-        assert(is_heap(heaps[__CHECK_HEAP_heap].begin(), heaps[__CHECK_HEAP_heap].end(), greaters[__CHECK_HEAP_heap]));
+        assert(std::is_heap(heaps[__CHECK_HEAP_heap].begin(), heaps[__CHECK_HEAP_heap].end(), greaters[__CHECK_HEAP_heap]));
 #endif
 
 /// UTILITY FUNCTIONS
@@ -62,7 +62,7 @@ inline static NumericVector rank(const NumericVector& x) {
     }
 
     const LessThanIndirect less_than(x);
-    sort(order.begin(), order.end(), less_than);
+    std::sort(order.begin(), order.end(), less_than);
 
     NumericVector r(x.size());
     for (int i = 0; i < r.size(); ++i) {
@@ -180,7 +180,7 @@ int PTAProcessor::right_child(int i) const {
 }
 
 void PTAProcessor::heap_swap(int heap, int i, int j) {
-    swap(heaps[heap][i], heaps[heap][j]);
+    std::swap(heaps[heap][i], heaps[heap][j]);
     nodes[heaps[heap][i]].positions[heap] = i;
     nodes[heaps[heap][j]].positions[heap] = j;
 }
@@ -360,7 +360,7 @@ PTAProcessor::PTAProcessor(const List arguments) :
     greaters.resize(nheaps);
     FOR_EACH_HEAP(heap) {
         greaters[heap].set(this, heap);
-        make_heap(heaps[heap].begin(), heaps[heap].end(), greaters[heap]);
+        std::make_heap(heaps[heap].begin(), heaps[heap].end(), greaters[heap]);
         for (int i = 0; i < node_count; ++i) {
             nodes[heaps[heap][i]].positions[heap] = i;
         }
