@@ -308,9 +308,6 @@ PTAProcessor::PTAProcessor(const List arguments) :
     original_start(NumericVector(static_cast<SEXP>(arguments["start"]))),
     original_end(NumericVector(static_cast<SEXP>(arguments["end"]))),
     original_scores(NumericMatrix(static_cast<SEXP>(arguments["scores"]))),
-    individual_parameter(NumericVector(static_cast<SEXP>(arguments["individualParameter"]))),
-    individual_parameter_given(as<int>(arguments["individualParameterGiven"])),
-    individual_parameter_weight(as<double>(arguments["individualParameterWeight"])),
     count_bound(as<int>(arguments["countBound"])),
     error_bound(as<double>(arguments["errorBound"])),
     cumulative_error_bound(as<double>(arguments["cumulativeErrorBound"])),
@@ -397,18 +394,7 @@ double PTAProcessor::merge_error(int i, int j) const {
 double PTAProcessor::node_correlation(int x, int y) const {
     const NumericVector scores_x = const_cast<PTAProcessor*>(this)->scores(x, _);
     const NumericVector scores_y = const_cast<PTAProcessor*>(this)->scores(y, _);
-
-    if (!individual_parameter_given) {
-        return correlation(scores_x, scores_y, correlation_spearman);
-    } else {
-        const double w_param = individual_parameter_weight;
-        const double w_nodes = 1 - w_param;
-        return
-            pow(correlation(scores_x, scores_y, correlation_spearman), w_nodes) *
-            pow(pow(correlation(scores_x, individual_parameter, correlation_spearman), 2) +
-                pow(correlation(scores_y, individual_parameter, correlation_spearman), 2),
-                w_param / 2);
-    }
+    return correlation(scores_x, scores_y, correlation_spearman);
 }
 
 List PTAProcessor::run() {

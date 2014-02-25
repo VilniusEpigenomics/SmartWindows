@@ -11,7 +11,6 @@ dStart <- (1:n)*10
 dEnd <- dStart + 6
 scores <- cbind(x, y, z)
 d <- GRanges(seqnames="chr0", ranges=IRanges(start=dStart, end=dEnd), x=x, y=y, z=z)
-dParam <- 1:3
 
 test_that("normal mode with errorBound works", {
     p <- PTA(d, adjacencyThreshold=10, cumulativeErrorBound=0.1)
@@ -39,16 +38,6 @@ test_that("correlation mode works", {
 test_that("spearman correlation works", {
     p <- PTA(d, adjacencyThreshold=10, mode="correlation", correlationBound=0.8, correlationSpearman=TRUE)
     expect_true(nrow(p$scores) < length(d))
-})
-
-test_that("individualParameter works", {
-    p0 <- PTA(d, adjacencyThreshold=10, mode="correlation", correlationBound=0.8)
-    p <- PTA(d, adjacencyThreshold=10, mode="correlation", correlationBound=0.8, individualParameter=dParam)
-    expect_false(identical(p0$scores, p$scores))
-
-    p0 <- PTA(d, adjacencyThreshold=10, mode="correlation", correlationBound=0.8, correlationSpearman=TRUE)
-    p <- PTA(d, adjacencyThreshold=10, mode="correlation", correlationBound=0.8, correlationSpearman=TRUE, individualParameter=dParam, individualParameterWeight=0.7)
-    expect_false(identical(p0$scores, p$scores))
 })
 
 

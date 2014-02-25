@@ -12,8 +12,7 @@
         countBound=1, errorBound=Inf, cumulativeErrorBound=Inf,
         adjacencyThreshold=1, skip=0, mode=c("normal", "correlation"),
         correlationBound=-1, correlationSpearman=FALSE,
-        correlationAbsolute=TRUE,
-        individualParameter=numeric(), individualParameterWeight=0.5)
+        correlationAbsolute=TRUE)
 }
 \arguments{
     \item{granges}{a GRanges object.}
@@ -44,13 +43,6 @@
     \item{correlationSpearman}{use Spearman correlation.}
     \item{correlationAbsolute}{if this is true, values are considered similar
         whether they are directly or inversely correlated.}
-    \item{individualParameter, individualParameterWeight}{if this is given,
-        correlation is calculated not in the usual way, but using the formula 
-        \deqn{\mathrm{cor}(A, B)^{1-w} (\mathrm{cor}(A, p)^2 + \mathrm{cor}(B, p)^2)^{w / 2}}{%
-              cor(A, B)^(1-w) (cor(A, p)^2 + cor(B, p)^2)^(w / 2)}
-        where p is the parameter vector, A and B are scores for the regions that are being compared and w is the weight.
-
-        This takes into account the ranges' correlation with an external parameter, constant for each individual.}
 }
 \value{
     \code{PTA} returns a list. The items \code{start}, \code{end}, \code{chr}
