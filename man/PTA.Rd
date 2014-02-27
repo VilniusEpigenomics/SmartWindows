@@ -15,14 +15,13 @@
         correlationAbsolute=TRUE)
 }
 \arguments{
-    \item{granges}{a GRanges object.}
     \item{start, end, chr}{vectors of beginnings, ends and possibly chromosome
         (or other kind of group) of ranges. The ranges should be sorted and
         non-overlapping (see \code{\link{deoverlap}}).}
     \item{scores}{matrix of values, the i-th row of which is a vector
         corresponding to the i-th range.}
-    \item{data}{a list containing elements named start, end, scores and chr
-        corresponding to the arguments.}
+    \item{data}{either a list containing elements named start, end, scores and
+        chr corresponding to the arguments, or a GRanges object.}
     \item{adjacencyThreshold}{ignore gaps of this size when considering whether
         ranges are adjacent.}
     \item{skip}{allow skipping over a given amount of ranges, ignoring the
