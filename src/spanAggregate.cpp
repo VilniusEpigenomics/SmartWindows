@@ -1,7 +1,6 @@
-#include <algorithm>
+#include <deque>
 #include <sstream>
-#include <cmath>
-#include "SpanAggregator.h"
+#include <Rcpp.h>
 
 using namespace Rcpp;
 
@@ -16,14 +15,14 @@ static void assert_is_finite(const NumericVector &x, int row) {
     }
 }
 
-SpanAggregator::SpanAggregator(const List arguments) :
-    start(IntegerVector(static_cast<SEXP>(arguments["start"]))),
-    end(IntegerVector(static_cast<SEXP>(arguments["end"]))),
-    scores(NumericMatrix(static_cast<SEXP>(arguments["scores"]))),
-    span(as<long>(arguments["span"]))
-{}
+RcppExport SEXP spanAggregate(SEXP arguments_) {
+BEGIN_RCPP
+    const List arguments(arguments_);
+    const Rcpp::IntegerVector start(IntegerVector(static_cast<SEXP>(arguments["start"])));
+    const Rcpp::IntegerVector end(IntegerVector(static_cast<SEXP>(arguments["end"])));
+    const Rcpp::NumericMatrix scores(NumericMatrix(static_cast<SEXP>(arguments["scores"])));
+    const long span = as<long>(arguments["span"]);
 
-List SpanAggregator::run() {
     std::deque<long> dest_start;
     std::deque<long> dest_end;
     std::deque<NumericVector> dest_scores;
@@ -36,7 +35,7 @@ List SpanAggregator::run() {
     long len_sum = 0;
     int count = 0;
 
-    while (i < size()) {
+    while (i < start.size()) {
         long intersection_start = std::max(static_cast<long>(start[i]), deststart);
         long intersection_end = std::min(static_cast<long>(end[i]), destend);
         long intersection_len = intersection_end - intersection_start;
@@ -96,4 +95,5 @@ List SpanAggregator::run() {
             Named("end") = result_end,
             Named("scores") = result_scores);
     return result;
+END_RCPP
 }
