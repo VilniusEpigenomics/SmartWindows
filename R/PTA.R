@@ -84,6 +84,52 @@ PTA1 <- function(start, end, scores,
 }
 
 #' @export
+spanAggregate <- function(start=NULL, end=NULL, scores=NULL, chr=NULL, data=NULL, span) {
+    if (class(data) == "GRanges") {
+        data <- extractGRanges(data)
+    }
+
+    if (class(start) == "GRanges") {
+        data <- extractGRanges(start)
+    }
+
+    if (!is.null(data)) {
+        start <- data$start
+        end <- data$end
+        scores <- data$scores
+        chr <- data$chr
+    }
+
+    if (is.null(chr) || length(unique(chr)) == 1) {
+        r <- .Call("spanAggregate",
+                   list(start=start, end=end, scores=scores, span=span),
+                   PACKAGE="PTA")
+        colnames(r$scores) <- colnames(scores)
+        r
+    } else {
+        result <- list(chr=c(),
+                       start=c(),
+                       end=c(),
+                       scores=matrix(nrow=0, ncol=ncol(scores)))
+        colnames(result$scores) <- colnames(scores)
+        for (chr1 in sort(unique(chr))) {
+            r <- .Call("spanAggregate",
+                       list(start=start[chr == chr1],
+                            end=end[chr == chr1],
+                            scores=scores[chr == chr1, ],
+                            span=span),
+                       PACKAGE="PTA")
+            result$chr <- c(result$chr, rep(chr1, length(r$start)))
+            result$start <- c(result$start, r$start)
+            result$end <- c(result$end, r$end)
+            result$scores <- rbind(result$scores, r$scores)
+        }
+        result$chr <- factor(result$chr)
+        result
+    }
+}
+
+#' @export
 applyPTAResult <- function(result,
                            start=NULL, end=NULL, scores=NULL, chr=NULL, data=NULL)
 {
