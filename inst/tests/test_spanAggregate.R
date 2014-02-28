@@ -21,17 +21,23 @@ colTApply <- function(mtx, index, fun) {
 
 test_that("correctly merges to one large span", {
     r <- spanAggregate(gr, span=1 + tail(dEnd, 1))
-    expect_true(all(r$scores - colMeans(scores) < .Machine$double.eps))
+    expect_true(all(r$scores - colMeans(scores) <= .Machine$double.eps))
     r <- spanAggregate(gr2, span=1 + tail(dEnd, 1))
     realScores <- colTApply(scores, rep(c(1, 2), each=50), mean)
-    expect_true(all(r$scores - realScores < .Machine$double.eps))
+    expect_true(all(r$scores - realScores <= .Machine$double.eps))
 })
 
-test_that("correctly merges to ten spans", {
+test_that("correctly merges spans of ten", {
     r <- spanAggregate(gr, span=100)
-    realScores <- apply(scores, 2, function(col) tapply(col, rep(1:10, each=10), mean))
-    expect_true(all(r$scores - realScores < .Machine$double.eps))
+    realScores <- colTApply(scores, rep(1:10, each=10), mean)
+    expect_true(all(r$scores - realScores <= .Machine$double.eps))
     r <- spanAggregate(gr2, span=100)
-    realScores <- apply(scores, 2, function(col) tapply(col, rep(1:10, each=10), mean))
-    expect_true(all(r$scores - realScores < .Machine$double.eps))
+    realScores <- colTApply(scores, rep(1:10, each=10), mean)
+    expect_true(all(r$scores - realScores <= .Machine$double.eps))
+})
+
+test_that("correctly merges small spans", {
+    r <- spanAggregate(gr, span=5)
+    realScores <- apply(scores, 2, rep, each=2)
+    expect_true(all(r$scores - realScores <= .Machine$double.eps))
 })

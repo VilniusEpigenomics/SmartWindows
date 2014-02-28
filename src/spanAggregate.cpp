@@ -22,54 +22,63 @@ BEGIN_RCPP
     const Rcpp::IntegerVector end(IntegerVector(static_cast<SEXP>(arguments["end"])));
     const Rcpp::NumericMatrix scores(NumericMatrix(static_cast<SEXP>(arguments["scores"])));
     const long span = as<long>(arguments["span"]);
+    const int ranges_count = start.size();
 
     std::deque<long> dest_start;
     std::deque<long> dest_end;
     std::deque<NumericVector> dest_scores;
 
     int i = 0;
-    long deststart = start[0];
-    long destend = deststart + span;
+    long spanstart = start[0];
+    long spanend = spanstart + span;
     NumericVector scores_sum(scores.ncol());
     scores_sum.fill(0);
     long len_sum = 0;
     int count = 0;
 
-    while (i < start.size()) {
-        long intersection_start = std::max(static_cast<long>(start[i]), deststart);
-        long intersection_end = std::min(static_cast<long>(end[i]), destend);
-        long intersection_len = intersection_end - intersection_start;
-        if (intersection_len > 0) {
+    long whole_start = start[0];
+    long whole_end = end[end.size() - 1];
+
+    while (spanend < whole_end + span) {
+        while (spanend <= start[i]) {
+            // Current range if right of span. Move to next span.
+            spanstart += span;
+            spanend += span;
+        }
+
+        while (end[i] <= spanstart) {
+            // Current range is left of span. Move to next range.
+            ++i;
+        }
+
+merge_range:
+        {
             // There is an intersection.
+            long intersection_start = std::max(static_cast<long>(start[i]), spanstart);
+            long intersection_end = std::min(static_cast<long>(end[i]), spanend);
+            long intersection_len = intersection_end - intersection_start;
             const NumericVector &row = const_cast<NumericMatrix &>(scores)(i, _);
             assert_is_finite(row, i);
             scores_sum += row * static_cast<double>(intersection_len);
             len_sum += intersection_len;
             ++count;
-            ++i;
-        } else if (end[i] <= deststart) {
-            // Current range is left of dest range. Move on.
-            ++i;
-        } else if (destend <= start[i]) {
-            // Current range if right of dest range. Append resulting span if any
-            // ranges were merged.
-            if (count > 0) {
-                dest_start.push_back(deststart);
-                dest_end.push_back(destend);
-                dest_scores.push_back(scores_sum / static_cast<double>(len_sum));
-                scores_sum.fill(0);
-                len_sum = 0;
-                count = 0;
-            }
-            deststart += span;
-            destend += span;
-        }
-    }
 
-    if (count > 0) {
-        dest_start.push_back(deststart);
-        dest_end.push_back(destend);
-        dest_scores.push_back(scores_sum / static_cast<double>(len_sum));
+            if ((end[i] < spanend) && (i < ranges_count - 1)) {
+                ++i;
+                goto merge_range;
+            }
+        }
+
+        if (count > 0) {
+            dest_start.push_back(spanstart);
+            dest_end.push_back(spanend);
+            dest_scores.push_back(scores_sum / static_cast<double>(len_sum));
+            scores_sum.fill(0);
+            len_sum = 0;
+            count = 0;
+        }
+        spanstart += span;
+        spanend += span;
     }
 
     long result_size = dest_start.size();
