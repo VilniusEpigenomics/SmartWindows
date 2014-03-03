@@ -1,7 +1,6 @@
 #include <algorithm>
-#include <cassert>
-#include <cmath>
 #include <limits>
+#include <cmath>
 #include "IntersectionAggregator.h"
 
 using namespace Rcpp;
@@ -43,21 +42,27 @@ void IntersectionAggregator::close_open_ranges(long until) {
 void IntersectionAggregator::output_range(long start, long end) {
     NumericVector sum = zero_score();
     int count = 0;
-    long group;
     for (std::map<long, Range>::const_iterator it = open_ranges.begin(); it != open_ranges.end(); ++it) {
         const Range &r = it->second;
-        group = r.group;
         sum += r.score;
         count++;
     }
     const NumericVector score = sum / static_cast<double>(count);
-    output.push_back(Range(group, start, end, score));
+    const Range r(cur_group, start, end, score);
+    output.push_back(r);
 }
 
 void IntersectionAggregator::run() {
+    if (size() == 0) return;
+    cur_group = group[0];
     for (int i = 0; i < size(); ++i) {
         const Range r = get_range(i);
-        close_open_ranges(r.start);
+        if (cur_group != r.group) {
+            close_open_ranges(std::numeric_limits<long>::max());
+            cur_group = r.group;
+        } else {
+            close_open_ranges(r.start);
+        }
         open_ranges.insert(std::make_pair(r.end, r));
         position = r.start;
     }

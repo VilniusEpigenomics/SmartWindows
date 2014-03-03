@@ -23,6 +23,7 @@ class IntersectionAggregator {
         const Rcpp::NumericMatrix scores;
 
         long position;
+        long cur_group;
         std::map<long, Range> open_ranges;
         std::deque<Range> output;
 
