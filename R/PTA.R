@@ -84,6 +84,19 @@ PTA1 <- function(start, end, scores,
 }
 
 #' @export
+intersectionAggregate <- function(group, start, end, scores)
+{
+    if (length(group) != length(start)) { stop("Group and start counts differ.") }
+    if (length(start) != length(end)) { stop("Start and end counts differ.") }
+    if (is.vector(scores)) { scores <- as.matrix(scores) }
+    if (length(start) != nrow(scores)) { stop("Range and score counts differ") }
+    arguments <- as.list(environment())
+    result <- .Call("intersectionAggregate", arguments, PACKAGE="PTA")
+    colnames(result$scores) <- colnames(scores)
+    result
+}
+
+#' @export
 spanAggregate <- function(start=NULL, end=NULL, scores=NULL, chr=NULL, data=NULL, span) {
     if (class(data) == "GRanges") {
         data <- extractGRanges(data)

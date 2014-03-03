@@ -14,3 +14,5 @@ Suggests:
     GenomicRanges,
     testthat
 LinkingTo: Rcpp
+Collate:
+    'PTA.R'
