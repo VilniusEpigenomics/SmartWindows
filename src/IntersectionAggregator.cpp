@@ -1,7 +1,7 @@
 #include <algorithm>
-#include <sstream>
 #include <cassert>
 #include <cmath>
+#include <limits>
 #include "IntersectionAggregator.h"
 
 using namespace Rcpp;
@@ -19,23 +19,49 @@ IntersectionAggregator::IntersectionAggregator(const List arguments) :
     group(IntegerVector(static_cast<SEXP>(arguments["group"]))),
     start(IntegerVector(static_cast<SEXP>(arguments["start"]))),
     end(IntegerVector(static_cast<SEXP>(arguments["end"]))),
-    scores(NumericMatrix(static_cast<SEXP>(arguments["scores"])))
+    scores(NumericMatrix(static_cast<SEXP>(arguments["scores"]))),
+    position(std::numeric_limits<long>::min())
 {}
 
 IntersectionAggregator::Range IntersectionAggregator::get_range(int i) const {
-    Range r;
-    r.group = group[i];
-    r.start = start[i];
-    r.end = end[i];
-    r.score = scores[i];
-    return r;
+    const NumericVector s = const_cast<NumericMatrix&>(scores)(i, _);
+    return Range(group[i], start[i], end[i], s);
+}
+
+void IntersectionAggregator::close_open_ranges(long until) {
+    while (!open_ranges.empty() && (position < until)) {
+        long first_open_end = open_ranges.begin()->first;
+        long r_end = std::min(until, first_open_end);
+        output_range(position, r_end);
+        if (first_open_end <= until) {
+            open_ranges.erase(first_open_end);
+        }
+        position = r_end;
+    }
+}
+
+void IntersectionAggregator::output_range(long start, long end) {
+    NumericVector sum = zero_score();
+    int count = 0;
+    long group;
+    for (std::map<long, Range>::const_iterator it = open_ranges.begin(); it != open_ranges.end(); ++it) {
+        const Range &r = it->second;
+        group = r.group;
+        sum += r.score;
+        count++;
+    }
+    const NumericVector score = sum / static_cast<double>(count);
+    output.push_back(Range(group, start, end, score));
 }
 
 void IntersectionAggregator::run() {
     for (int i = 0; i < size(); ++i) {
         const Range r = get_range(i);
-        output.push_back(r);
+        close_open_ranges(r.start);
+        open_ranges.insert(std::make_pair(r.end, r));
+        position = r.start;
     }
+    close_open_ranges(std::numeric_limits<long>::max());
 }
 
 List IntersectionAggregator::get_result() {

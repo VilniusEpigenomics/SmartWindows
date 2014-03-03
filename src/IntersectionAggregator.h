@@ -2,7 +2,7 @@
 #define PTA_IntersectionAggregator_h
 #include <Rcpp.h>
 #include <deque>
-#include <cassert>
+#include <map>
 
 class IntersectionAggregator {
     private:
@@ -11,6 +11,10 @@ class IntersectionAggregator {
             long start;
             long end;
             Rcpp::NumericVector score;
+
+            Range(long g, long s, long e, Rcpp::NumericVector sc) :
+                group(g), start(s), end(e), score(sc)
+            {}
         };
 
         const Rcpp::IntegerVector group;
@@ -18,10 +22,15 @@ class IntersectionAggregator {
         const Rcpp::IntegerVector end;
         const Rcpp::NumericMatrix scores;
 
+        long position;
+        std::map<long, Range> open_ranges;
         std::deque<Range> output;
 
         inline int size() const { return start.size(); }
+        inline Rcpp::NumericVector zero_score() { return Rcpp::NumericVector(scores.ncol()); }
         Range get_range(int i) const;
+        void close_open_ranges(long until);
+        void output_range(long start, long end);
 
     public:
         IntersectionAggregator(const Rcpp::List arguments);
