@@ -26,7 +26,7 @@ BEGIN_RCPP
 
     std::deque<long> dest_start;
     std::deque<long> dest_end;
-    std::deque<NumericVector> dest_scores;
+    std::deque< std::vector<double> > dest_scores;
 
     int i = 0;
     long spanstart = start[0];
@@ -72,7 +72,8 @@ merge_range:
         if (count > 0) {
             dest_start.push_back(spanstart);
             dest_end.push_back(spanend);
-            dest_scores.push_back(scores_sum / static_cast<double>(len_sum));
+            const NumericVector mean_score = scores_sum / static_cast<double>(len_sum);
+            dest_scores.push_back(as< std::vector<double> >(mean_score));
             scores_sum.fill(0);
             len_sum = 0;
             count = 0;
@@ -89,11 +90,12 @@ merge_range:
 
     std::deque<long>::const_iterator start_iter = dest_start.begin();
     std::deque<long>::const_iterator end_iter = dest_end.begin();
-    std::deque<NumericVector>::const_iterator scores_iter = dest_scores.begin();
+    std::deque< std::vector<double> >::const_iterator scores_iter = dest_scores.begin();
     for (int result_i = 0; result_i < result_size; ++result_i) {
         result_start[result_i] = *start_iter;
         result_end[result_i] = *end_iter;
-        result_scores(result_i, _) = *scores_iter;
+        const NumericVector score(scores_iter->begin(), scores_iter->end());
+        result_scores(result_i, _) = score;
         ++start_iter;
         ++end_iter;
         ++scores_iter;
