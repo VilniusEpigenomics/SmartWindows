@@ -82,10 +82,10 @@ merge_range:
         spanend += span;
     }
 
-    long result_size = dest_start.size();
+    int result_size = dest_start.size();
 
-    NumericVector result_start(result_size);
-    NumericVector result_end(result_size);
+    IntegerVector result_start(result_size);
+    IntegerVector result_end(result_size);
     NumericMatrix result_scores(result_size, scores.ncol());
 
     std::deque<long>::const_iterator start_iter = dest_start.begin();
@@ -100,6 +100,8 @@ merge_range:
         ++end_iter;
         ++scores_iter;
     }
+
+    result_end[result_size - 1] = std::min(static_cast<long>(result_end[result_size - 1]), whole_end);
 
     List result = List::create(
             Named("start") = result_start,

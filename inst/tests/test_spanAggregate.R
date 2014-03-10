@@ -41,3 +41,14 @@ test_that("correctly merges small spans", {
     realScores <- apply(scores, 2, rep, each=2)
     expect_true(all(r$scores - realScores <= .Machine$double.eps))
 })
+
+test_that("span boundaries don't exceed original boundaries", {
+    r <- spanAggregate(gr, span=5)
+    expect_true(r$start[1] >= dStart[1])
+    expect_true(tail(r$end, 1) <= tail(dEnd, 1))
+    r <- spanAggregate(gr2, span=5)
+    expect_true(r$start[r$chr == "chr1"][1] >= dStart[twoChr == "chr1"][1])
+    expect_true(tail(r$end[r$chr == "chr1"], 1) <= tail(dEnd[twoChr == "chr1"], 1))
+    expect_true(r$start[r$chr == "chr2"][1] >= dStart[twoChr == "chr2"][1])
+    expect_true(tail(r$end[r$chr == "chr2"], 1) <= tail(dEnd[twoChr == "chr2"], 1))
+})
