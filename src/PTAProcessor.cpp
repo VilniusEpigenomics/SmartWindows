@@ -27,28 +27,6 @@ static inline double sum_sq(const NumericVector& x) {
     return sum;
 }
 
-template <typename T>
-struct AffineTransform {
-    double intercept, coefficient;
-    AffineTransform(double a, double b) : intercept(a), coefficient(b) {}
-
-    inline T operator()(const T& x) const {
-        return intercept + coefficient * x;
-    }
-
-    inline AffineTransform<T> inverse() const {
-        return AffineTransform<T>(-(intercept / coefficient), 1 / coefficient);
-    }
-};
-
-static inline AffineTransform<NumericVector> linear_regression(const NumericVector& x, const NumericVector& y) {
-    const double mean_x = mean(x);
-    const double mean_y = mean(y);
-    const double b = (mean(x * y) - mean_x * mean_y) / (mean(x*x) - mean_x * mean_x);
-    const double a = mean_y - b * mean_x;
-    return AffineTransform<NumericVector>(a, b);
-}
-
 struct LessThanIndirect {
     const NumericVector& x;
     LessThanIndirect(const NumericVector& x_) : x(x_) {}
@@ -144,20 +122,8 @@ bool PTAProcessor::adjacent(int i, int j) const {
 NumericVector PTAProcessor::merged_scores(int i, int j) const {
     const NumericVector scores_i = const_cast<PTAProcessor*>(this)->scores(i, _);
     const NumericVector scores_j = const_cast<PTAProcessor*>(this)->scores(j, _);
-    if (mode != PTA_MODE_CORRELATION) {
-        return (length(i) * scores_i + length(j) * scores_j)
-             / (length(i) + length(j));
-    } else {
-        NumericVector scores_i_m = clone(scores_i);
-        NumericVector scores_j_m = clone(scores_j);
-        if (length(i) >= length(j)) {
-            scores_j_m = linear_regression(scores_i, scores_j).inverse()(scores_j);
-        } else {
-            scores_i_m = linear_regression(scores_j, scores_i).inverse()(scores_i);
-        }
-        return (length(i) * scores_i_m + length(j) * scores_j_m)
-             / (length(i) + length(j));
-    }
+    return (length(i) * scores_i + length(j) * scores_j)
+        / (length(i) + length(j));
 }
 
 double PTAProcessor::key(int heap, int nodeid) const {
@@ -459,27 +425,6 @@ List PTAProcessor::run() {
     switch (mode) {
         case PTA_MODE_NORMAL:
             result["cumulativeError"] = cumulative_error;
-            break;
-
-        case PTA_MODE_CORRELATION:
-            {
-                NumericVector coefficients(original_start.size());
-                NumericVector intercepts(original_start.size());
-                for (int i = 0; i < original_start.size(); ++i) {
-                    if (groups[i] != -1) {
-                        const NumericVector original = (*const_cast<NumericMatrix*>(&original_scores))(i, _);
-                        const NumericVector merged = newscores(groups[i], _);
-                        const AffineTransform<NumericVector> t = linear_regression(merged, original).inverse();
-                        coefficients[i] = t.coefficient;
-                        intercepts[i] = t.intercept;
-                    } else {
-                        coefficients[i] = 1;
-                        intercepts[i] = 0;
-                    }
-                }
-                result["coefficients"] = coefficients;
-                result["intercepts"] = intercepts;
-            }
             break;
     }
 
