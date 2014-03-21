@@ -82,7 +82,7 @@ class __attribute__((visibility("hidden"))) PTAProcessor {
         void heap_insert(int heap, int nodeid);
 
         void update_node(int nodeid);
-        bool merge(int heap, int node);
+        bool merge(int heap, int node, double *error = NULL);
 
     public:
         PTAProcessor(const Rcpp::List arguments);

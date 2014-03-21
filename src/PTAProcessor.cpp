@@ -232,7 +232,7 @@ void PTAProcessor::update_node(int nodeid) {
     }
 }
 
-bool PTAProcessor::merge(int minheap, int minnode) {
+bool PTAProcessor::merge(int minheap, int minnode, double *error) {
     const Node& top = nodes[minnode];
     if (top.keys[minheap] == INFINITY) return false;
 
@@ -253,7 +253,16 @@ bool PTAProcessor::merge(int minheap, int minnode) {
     node_count -= minheap + 1;
     Node& repl = nodes[nodeid]; // replacement
 
-    scores(repl.id, _) = merged_scores(repl.id, minnode);
+    const NumericVector merged = merged_scores(repl.id, minnode);
+    if (error) {
+        int i = repl.id;
+        int j = minnode;
+        const NumericVector diff_i = merged - const_cast<PTAProcessor *>(this)->scores(i, _);
+        const NumericVector diff_j = merged - const_cast<PTAProcessor *>(this)->scores(j, _);
+        *error = length(i) * sum_sq(diff_i) + length(j) * sum_sq(diff_j);
+    }
+
+    scores(repl.id, _) = merged;
     end[repl.id] = end[minnode];
     repl.next = top.next;
     if (repl.next != -1) nodes[repl.next].prev = repl.id;
@@ -383,18 +392,20 @@ List PTAProcessor::run() {
                break;
            }
         } else {
-            if ((minkey > error_bound) ||
-                (cumulative_error + minkey > abs_error_bound))
-            {
-                break;
-            }
         }
 
-        if (!merge(minheap, minnode)) {
+        double error;
+        if (!merge(minheap, minnode, &error)) {
             break;
         }
 
-        cumulative_error += minkey;
+        cumulative_error += error;
+
+        if ((error > error_bound) ||
+            (cumulative_error > abs_error_bound))
+        {
+            break;
+        }
     }
 
     NumericVector newstart(node_count);
@@ -420,13 +431,7 @@ List PTAProcessor::run() {
             Named("start") = newstart,
             Named("end") = newend,
             Named("scores") = newscores,
-            Named("groups") = groups);
-
-    switch (mode) {
-        case PTA_MODE_NORMAL:
-            result["cumulativeError"] = cumulative_error;
-            break;
-    }
-
+            Named("groups") = groups,
+            Named("cumulativeError") = cumulative_error);
     return result;
 }
