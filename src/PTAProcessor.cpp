@@ -135,20 +135,11 @@ double PTAProcessor::key(int heap, int nodeid) const {
 
     if (!adjacent(previd, nodeid)) return INFINITY;
 
-    switch (mode) {
-        case PTA_MODE_NORMAL:
-            return merge_error(previd, nodeid);
-        case PTA_MODE_CORRELATION:
-            {
-                double cor = node_correlation(previd, nodeid);
-                if (correlation_absolute) {
-                    return 1 - std::abs(cor);
-                } else {
-                    return 1 - cor;
-                }
-            }
-        default:
-            throw Rcpp::exception("Bad PTA mode.");
+    if (correlation_mode) {
+        double cor = node_correlation(previd, nodeid);
+        return 1 - cor;
+    } else {
+        return merge_error(previd, nodeid);
     }
 }
 
@@ -286,18 +277,27 @@ PTAProcessor::PTAProcessor(const List arguments) :
     count_bound(as<int>(arguments["countBound"])),
     error_bound(as<double>(arguments["errorBound"])),
     cumulative_error_bound(as<double>(arguments["cumulativeErrorBound"])),
-    correlation_bound(as<double>(arguments["correlationBound"])),
-    correlation_spearman(as<int>(arguments["correlationSpearman"])),
-    correlation_absolute(as<int>(arguments["correlationAbsolute"])),
     adjacency_threshold(as<double>(arguments["adjacencyThreshold"])),
     mode(as<int>(arguments["mode"])),
+    correlation_mode(as<int>(arguments["mode"]) != PTA_MODE_NORMAL),
+    correlation_spearman(as<int>(arguments["mode"]) == PTA_MODE_CORRELATION_SPEARMAN),
+    correlation_bound(as<double>(arguments["correlationBound"])),
     nheaps(as<int>(arguments["skip"]) + 1)
 {
     start = clone(original_start);
     end = clone(original_end);
     scores = clone(original_scores);
 
-    if ((count_bound > 1) || (mode == PTA_MODE_CORRELATION)) {
+    switch (mode) {
+        case PTA_MODE_NORMAL:
+        case PTA_MODE_CORRELATION:
+        case PTA_MODE_CORRELATION_SPEARMAN:
+            break;
+        default:
+            throw Rcpp::exception("Bad PTA mode.");
+    }
+
+    if (cumulative_error_bound == INFINITY) {
         maximum_error = INFINITY;
     } else {
         // calculate maximum error
@@ -387,11 +387,10 @@ List PTAProcessor::run() {
             }
         }
 
-        if (mode == PTA_MODE_CORRELATION) {
+        if (correlation_mode) {
            if (1 - minkey <= correlation_bound) {
                break;
            }
-        } else {
         }
 
         double error;

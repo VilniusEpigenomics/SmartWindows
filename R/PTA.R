@@ -54,11 +54,11 @@ PTA <- function(start=NULL, end=NULL, scores=NULL, chr=NULL, data=NULL, ...) {
 
 PTA1 <- function(start, end, scores,
                  countBound=1, errorBound=Inf, cumulativeErrorBound=Inf,
-                 adjacencyThreshold=1, skip=0, mode=c("normal", "correlation"),
-                 correlationBound=-1, correlationSpearman=FALSE, correlationAbsolute=TRUE)
+                 adjacencyThreshold=1, skip=0, mode=c("normal", "correlation", "correlationSpearman"),
+                 correlationBound=-1)
 {
     mode <- match.arg(mode)
-    mode <- switch(mode, normal=0, correlation=1)
+    mode <- switch(mode, normal=0, correlation=1, correlationSpearman=2)
 
     if (is.vector(scores)) {
         scores <- matrix(scores)

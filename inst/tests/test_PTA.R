@@ -33,10 +33,12 @@ test_that("normal mode with countBound works", {
 test_that("correlation mode works", {
     p <- PTA(d, adjacencyThreshold=10, mode="correlation", correlationBound=0.8)
     expect_true(nrow(p$scores) < length(d))
+    p <- PTA(d, adjacencyThreshold=10, mode="correlation", cumulativeErrorBound=0.1)
+    expect_true(nrow(p$scores) < length(d))
 })
 
 test_that("spearman correlation works", {
-    p <- PTA(d, adjacencyThreshold=10, mode="correlation", correlationBound=0.8, correlationSpearman=TRUE)
+    p <- PTA(d, adjacencyThreshold=10, mode="correlationSpearman", correlationBound=0.8)
     expect_true(nrow(p$scores) < length(d))
 })
 

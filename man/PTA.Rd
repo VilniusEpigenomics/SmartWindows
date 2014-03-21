@@ -10,9 +10,9 @@
     
     PTA(start, end, scores, chr=NULL,
         countBound=1, errorBound=Inf, cumulativeErrorBound=Inf,
-        adjacencyThreshold=1, skip=0, mode=c("normal", "correlation"),
-        correlationBound=-1, correlationSpearman=FALSE,
-        correlationAbsolute=TRUE)
+        adjacencyThreshold=1, skip=0,
+        mode=c("normal", "correlation", "correlationSpearman"),
+        correlationBound=-1)
 }
 \arguments{
     \item{start, end, chr}{vectors of beginnings, ends and possibly chromosome
@@ -30,18 +30,16 @@
         should be increased together with this parameter.}
     \item{countBound}{stop processing when this count of ranges is reached.}
     \item{mode}{either 'normal' (default) which uses sum-squared-error as
-        dissimilarity metric, or 'correlation' which uses correlation as
-        similarity}
+        dissimilarity metric, 'correlation' which uses Pearson correlation as
+        similarity or 'correlationSpearman' which uses Spearman correlation.}
     \item{errorBound}{stop processing when per-merge sum-squared-error reaches
-        this value. Only used in normal mode.}
+        this value.}
     \item{cumulativeErrorBound}{stop processing when the cumulative error
         reaches this value, expressed as a fraction of approximate maximum
-        merge error for the given data. Only used in normal mode.}
+        merge error for the given data.}
     \item{correlationBound}{stop processing when the maximum correlation
-        between nodes considered for merging is lower than this number.}
-    \item{correlationSpearman}{use Spearman correlation.}
-    \item{correlationAbsolute}{if this is true, values are considered similar
-        whether they are directly or inversely correlated.}
+        between nodes considered for merging is lower than this number.
+        Only used in correlation modes.}
 }
 \value{
     \code{PTA} returns a list. The items \code{start}, \code{end}, \code{chr}

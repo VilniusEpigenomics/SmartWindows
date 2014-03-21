@@ -6,6 +6,7 @@
 
 #define PTA_MODE_NORMAL 0
 #define PTA_MODE_CORRELATION 1
+#define PTA_MODE_CORRELATION_SPEARMAN 2
 
 class __attribute__((visibility("hidden"))) PTAProcessor {
     private:
@@ -46,8 +47,8 @@ class __attribute__((visibility("hidden"))) PTAProcessor {
         const double cumulative_error_bound;
         const double adjacency_threshold;
         const double correlation_bound;
+        const bool correlation_mode;
         const bool correlation_spearman;
-        const bool correlation_absolute;
 
         const int mode;
 
