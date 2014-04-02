@@ -129,7 +129,7 @@ spanAggregate <- function(start=NULL, end=NULL, scores=NULL, chr=NULL, data=NULL
             r <- .Call("spanAggregate",
                        list(start=start[chr == chr1],
                             end=end[chr == chr1],
-                            scores=scores[chr == chr1, ],
+                            scores=as.matrix(scores[chr == chr1, ]),
                             span=span),
                        PACKAGE="PTA")
             result$chr <- c(result$chr, rep(chr1, length(r$start)))
