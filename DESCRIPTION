@@ -8,8 +8,7 @@ Maintainer: Kiprianas Spiridonovas <k.spiridonovas@gmail.com>
 Description: Simplifies RangedData while minimising the error.
 License: BSD
 Depends:
-    Rcpp (>= 0.10.2),
-    IRanges
+    Rcpp (>= 0.10.2)
 Suggests:
     GenomicRanges,
     testthat
