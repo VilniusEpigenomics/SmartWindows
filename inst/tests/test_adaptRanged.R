@@ -8,7 +8,7 @@ d4 <- RangedData(ranges=IRanges(start=c(1, 7, 8), end=c(4, 8, 10)), score=1:3)
 
 test_that("empty ranges work", {
     expect_equal(length(adaptRanged(start(d2), end(d2), score(d2), start(empty), end(empty))$score), 0)
-    expect_equal(adaptRanged(integer(), integer(), integer(), start(d2), end(d2))$score, rep(NA, 4))
+    expect_equal(adaptRanged(integer(), integer(), integer(), start(d2), end(d2))$score, as.numeric(rep(NA, 4)))
 })
 
 test_that("doesn't change identical intervals", {

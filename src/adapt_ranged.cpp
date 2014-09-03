@@ -4,31 +4,32 @@
 using namespace Rcpp;
 
 RcppExport SEXP adapt_ranged(
-        SEXP sum_, SEXP len_, SEXP found_,
-        SEXP error_, SEXP add_error_,
-        SEXP destnrow_, SEXP deststart_, SEXP destend_, SEXP destscore_,
-        SEXP srcnrow_, SEXP srcstart_, SEXP srcend_, SEXP srcscore_)
+    SEXP srcstart_, SEXP srcend_, SEXP srcscore_,
+    SEXP deststart_, SEXP destend_,
+    SEXP add_error_)
 {
-    NumericVector sum(sum_);
-    NumericVector len(len_);
-    LogicalVector found(found_);
-    NumericVector error(error_);
-    int add_error = as<int>(add_error_);
-    int destnrow = as<int>(destnrow_);
-    NumericVector deststart(deststart_);
-    NumericVector destend(destend_);
-    NumericVector destscore(destscore_);
-    int srcnrow = as<int>(srcnrow_);
     NumericVector srcstart(srcstart_);
     NumericVector srcend(srcend_);
     NumericVector srcscore(srcscore_);
+    NumericVector deststart(deststart_);
+    NumericVector destend(destend_);
+    int add_error = as<int>(add_error_);
+
+    int srcn = srcstart.size();
+    int destn = deststart.size();
+
+    NumericVector len(destn, 0.0);
+    NumericVector sum(destn, 0.0);
+    LogicalVector found(destn, false);
+    NumericVector error(destn, 0.0);
+    NumericVector destscore(destn, 0.0);
 
     int srci = 0;
     int desti = 0;
     double intlen, left, right;
     bool rightinside; // src inside dest
 
-    while ((srci < srcnrow) && (desti < destnrow)) {
+    while ((srci < srcn) && (desti < destn)) {
         if (deststart[desti] >= srcend[srci]) {
             ++srci;
             continue;
@@ -66,5 +67,5 @@ RcppExport SEXP adapt_ranged(
         }
     }
 
-    return R_NilValue;
+    return wrap(ifelse(found, sum / len, NA_REAL));
 }

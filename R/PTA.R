@@ -219,29 +219,19 @@ deoverlap <- function(start, end) {
 
 #' @export
 adaptRanged <- function(srcStart, srcEnd, srcScore, destStart, destEnd) {
-    destCount <- length(destStart)
-    srcCount <- length(srcStart)
-    if (is.matrix(srcScore)) {
-        newscore <- apply(srcScore, 2,
-                          function(score) {
-                              sum <- rep(0, destCount)
-                              len <- rep(0, destCount)
-                              found <- rep(FALSE, destCount)
-                              error <- rep(0, 0)
-                              .Call("adapt_ranged", sum, len, found, error, FALSE,
-                                    destCount, destStart, destEnd, rep(0, destCount),
-                                    srcCount, srcStart, srcEnd, score)
-                              ifelse(found, sum / len, NA)
-                          })
+    newscore <- if (is.matrix(srcScore)) {
+        apply(srcScore, 2,
+              function(scoreCol) {
+                  .Call("adapt_ranged",
+                        as.numeric(srcStart), as.numeric(srcEnd), as.numeric(scoreCol),
+                        as.numeric(destStart), as.numeric(destEnd),
+                        FALSE)
+              })
     } else {
-        sum <- rep(0, destCount)
-        len <- rep(0, destCount)
-        found <- rep(FALSE, destCount)
-        error <- rep(0, 0)
-        .Call("adapt_ranged", sum, len, found, error, FALSE,
-              destCount, destStart, destEnd, rep(0, destCount),
-              srcCount, srcStart, srcEnd, srcScore)
-        newscore <- ifelse(found, sum / len, NA)
+        .Call("adapt_ranged",
+              as.numeric(srcStart), as.numeric(srcEnd), as.numeric(srcScore),
+              as.numeric(destStart), as.numeric(destEnd),
+              FALSE)
     }
     list(start=destStart,
          end=destEnd,
