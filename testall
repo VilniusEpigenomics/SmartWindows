@@ -1,0 +1,9 @@
+#!/bin/bash
+
+rm -f src/*.{o,so}
+MAKEFLAGS='-j2 CXXFLAGS+=-U_FORTIFY_SOURCE CXXFLAGS+=-UNDEBUG CXXFLAGS+=-std=c++0x CXXFLAGS+=-O0 CXXFLAGS+=-g' R CMD INSTALL . || exit 1
+Rscript tests/run_tests.R || exit 1
+
+rm -f src/*.{o,so}
+MAKEFLAGS=-j2 R CMD INSTALL . || exit 1
+Rscript tests/run_tests.R || exit 1
