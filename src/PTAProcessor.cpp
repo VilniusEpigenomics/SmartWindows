@@ -99,10 +99,6 @@ static void assert_is_finite(const NumericVector &x, int row) {
 
 /// METHODS
 
-double PTAProcessor::length(int interval) const {
-    return end[interval] - start[interval] + 1;
-}
-
 bool PTAProcessor::adjacent(int i, int j) const {
     if (i == j) {
         return true;
@@ -122,8 +118,8 @@ bool PTAProcessor::adjacent(int i, int j) const {
 NumericVector PTAProcessor::merged_scores(int i, int j) const {
     const NumericVector scores_i = const_cast<PTAProcessor*>(this)->scores(i, _);
     const NumericVector scores_j = const_cast<PTAProcessor*>(this)->scores(j, _);
-    return (length(i) * scores_i + length(j) * scores_j)
-        / (length(i) + length(j));
+    return (width(i) * scores_i + width(j) * scores_j)
+        / (width(i) + width(j));
 }
 
 double PTAProcessor::key(int heap, int nodeid) const {
@@ -250,11 +246,12 @@ bool PTAProcessor::merge(int minheap, int minnode, double *error) {
         int j = minnode;
         const NumericVector diff_i = merged - const_cast<PTAProcessor *>(this)->scores(i, _);
         const NumericVector diff_j = merged - const_cast<PTAProcessor *>(this)->scores(j, _);
-        *error = length(i) * sum_sq(diff_i) + length(j) * sum_sq(diff_j);
+        *error = width(i) * sum_sq(diff_i) + width(j) * sum_sq(diff_j);
     }
 
     scores(repl.id, _) = merged;
     end[repl.id] = end[minnode];
+    width[repl.id] += width[minnode];
     repl.next = top.next;
     if (repl.next != -1) nodes[repl.next].prev = repl.id;
 
@@ -286,6 +283,7 @@ PTAProcessor::PTAProcessor(const List arguments) :
 {
     start = clone(original_start);
     end = clone(original_end);
+    width = end - start;
     scores = clone(original_scores);
 
     switch (mode) {
@@ -302,24 +300,24 @@ PTAProcessor::PTAProcessor(const List arguments) :
     } else {
         // calculate maximum error
         NumericVector score1 = clone(NumericVector(scores(0, _)));
-        double length1 = length(0);
+        double width1 = width(0);
         int first_i = 0;
         maximum_error = 0;
         minimum_count = 1;
         for (int i = 1; i <= size(); ++i) {
             if ((i < size()) && adjacent(i - 1, i)) {
-                score1 = (length1 * score1 + length(i) * scores(i, _))
-                       / (length1 + length(i));
-                length1 += length(i);
+                score1 = (width1 * score1 + width(i) * scores(i, _))
+                       / (width1 + width(i));
+                width1 += width(i);
             } else {
                 for (int j = first_i; j < i; ++j) {
                     const NumericVector diff = score1 - scores(j, _);
-                    maximum_error += length(j) * sum_sq(diff);
+                    maximum_error += width(j) * sum_sq(diff);
                 }
 
                 if (i < size()) {
                     score1 = scores(i, _);
-                    length1 = length(i);
+                    width1 = width(i);
                     first_i = i;
                     ++minimum_count;
                 }
@@ -363,7 +361,7 @@ double PTAProcessor::merge_error(int i, int j) const {
     const NumericVector z = merged_scores(i, j);
     const NumericVector diff_i = z - const_cast<PTAProcessor *>(this)->scores(i, _);
     const NumericVector diff_j = z - const_cast<PTAProcessor *>(this)->scores(j, _);
-    return length(i) * sum_sq(diff_i) + length(j) * sum_sq(diff_j);
+    return width(i) * sum_sq(diff_i) + width(j) * sum_sq(diff_j);
 }
 
 double PTAProcessor::node_correlation(int x, int y) const {
@@ -409,6 +407,7 @@ List PTAProcessor::run() {
 
     NumericVector newstart(node_count);
     NumericVector newend(node_count);
+    NumericVector newwidth(node_count);
     NumericMatrix newscores(node_count, scores.ncol());
     IntegerVector groups(original_start.size());
     int groupid = -1;
@@ -417,6 +416,7 @@ List PTAProcessor::run() {
             ++groupid;
             newstart[groupid] = start[i];
             newend[groupid] = end[i];
+            newwidth[groupid] = width[i];
             newscores(groupid, _) = scores(i, _);
         }
         if (nodes[i].skipped) {
@@ -429,6 +429,7 @@ List PTAProcessor::run() {
     List result = List::create(
             Named("start") = newstart,
             Named("end") = newend,
+            Named("width") = newwidth,
             Named("scores") = newscores,
             Named("groups") = groups,
             Named("cumulativeError") = cumulative_error);

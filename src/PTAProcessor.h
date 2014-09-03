@@ -40,6 +40,9 @@ class __attribute__((visibility("hidden"))) PTAProcessor {
 
         Rcpp::NumericVector start;
         Rcpp::NumericVector end;
+        // Width is not just end-start when merging through gaps, so store it
+        // separately.
+        Rcpp::NumericVector width;
         Rcpp::NumericMatrix scores;
 
         const int count_bound;
