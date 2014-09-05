@@ -53,8 +53,9 @@ PTA <- function(start=NULL, end=NULL, scores=NULL, chr=NULL, data=NULL, ...) {
 }
 
 PTA1 <- function(start, end, scores,
-                 countBound=1, errorBound=Inf, cumulativeErrorBound=Inf,
-                 adjacencyThreshold=1, skip=0, mode=c("normal", "correlation", "correlationSpearman"),
+                 countBound=1, cumulativeErrorBound=Inf,
+                 adjacencyThreshold=1, skip=0,
+                 mode=c("normal", "correlation", "correlationSpearman"),
                  correlationBound=-1)
 {
     mode <- match.arg(mode)

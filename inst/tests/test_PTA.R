@@ -12,11 +12,8 @@ dEnd <- dStart + 6
 scores <- cbind(x, y, z)
 d <- GRanges(seqnames="chr0", ranges=IRanges(start=dStart, end=dEnd), x=x, y=y, z=z)
 
-test_that("normal mode with errorBound works", {
+test_that("normal mode with error bound works", {
     p <- PTA(d, adjacencyThreshold=10, cumulativeErrorBound=0.1)
-    expect_true(nrow(p$scores) < length(d))
-
-    p <- PTA(d, adjacencyThreshold=10, errorBound=100)
     expect_true(nrow(p$scores) < length(d))
 })
 

@@ -46,7 +46,6 @@ class __attribute__((visibility("hidden"))) PTAProcessor {
         Rcpp::NumericMatrix scores;
 
         const int count_bound;
-        const double error_bound;
         const double cumulative_error_bound;
         const double adjacency_threshold;
         const double correlation_bound;

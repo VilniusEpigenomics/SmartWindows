@@ -272,7 +272,6 @@ PTAProcessor::PTAProcessor(const List arguments) :
     original_end(NumericVector(static_cast<SEXP>(arguments["end"]))),
     original_scores(NumericMatrix(static_cast<SEXP>(arguments["scores"]))),
     count_bound(as<int>(arguments["countBound"])),
-    error_bound(as<double>(arguments["errorBound"])),
     cumulative_error_bound(as<double>(arguments["cumulativeErrorBound"])),
     adjacency_threshold(as<double>(arguments["adjacencyThreshold"])),
     mode(as<int>(arguments["mode"])),
@@ -398,9 +397,7 @@ List PTAProcessor::run() {
 
         cumulative_error += error;
 
-        if ((error > error_bound) ||
-            (cumulative_error > abs_error_bound))
-        {
+        if (cumulative_error > abs_error_bound) {
             break;
         }
     }

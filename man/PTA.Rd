@@ -9,7 +9,7 @@
     PTA(data, ...)
     
     PTA(start, end, scores, chr=NULL,
-        countBound=1, errorBound=Inf, cumulativeErrorBound=Inf,
+        countBound=1, cumulativeErrorBound=Inf,
         adjacencyThreshold=1, skip=0,
         mode=c("normal", "correlation", "correlationSpearman"),
         correlationBound=-1)
@@ -28,12 +28,10 @@
         error they introduce. Useful if data has outliers that need to be ignored.
         Skipping still happens no further than adjacency threshold, which
         should be increased together with this parameter.}
-    \item{countBound}{stop processing when this count of ranges is reached.}
     \item{mode}{either 'normal' (default) which uses sum-squared-error as
         dissimilarity metric, 'correlation' which uses Pearson correlation as
         similarity or 'correlationSpearman' which uses Spearman correlation.}
-    \item{errorBound}{stop processing when per-merge sum-squared-error reaches
-        this value.}
+    \item{countBound}{stop processing when this count of ranges is reached.}
     \item{cumulativeErrorBound}{stop processing when the cumulative error
         reaches this value, expressed as a fraction of approximate maximum
         merge error for the given data.}
