@@ -1,4 +1,4 @@
-Package: PTA
+Package: SmartWindows
 Type: Package
 Title: Parsimonious Temporal Aggregation
 Version: 1.0
@@ -14,4 +14,4 @@ Suggests:
     testthat
 LinkingTo: Rcpp
 Collate:
-    'PTA.R'
+    'SmartWindows.R'

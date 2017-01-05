@@ -1,14 +1,14 @@
-\name{PTA}
-\alias{PTA}
+\name{SmartWindows}
+\alias{SmartWindows}
 
-\title{PTA}
+\title{SmartWindows}
 \description{Aggregate ranged data in various ways}
 \usage{
-    PTA(granges, ...)
+    SmartWindows(granges, ...)
 
-    PTA(data, ...)
+    SmartWindows(data, ...)
     
-    PTA(start, end, scores, chr=NULL,
+    SmartWindows(start, end, scores, chr=NULL,
         countBound=1, cumulativeErrorBound=Inf,
         adjacencyThreshold=1, skip=0,
         mode=c("normal", "correlation", "correlationSpearman"),
@@ -40,7 +40,7 @@
         Only used in correlation modes.}
 }
 \value{
-    \code{PTA} returns a list. The items \code{start}, \code{end}, \code{chr}
+    \code{SmartWindows} returns a list. The items \code{start}, \code{end}, \code{chr}
     and \code{scores} which contain processed data.
 
     The item \code{groups} contains the index (1-based) of the merged range
@@ -56,7 +56,7 @@
     original-value-space to merged-value-space.
 }
 \seealso{
-    \link[PTA]{PTA-package}
+    \link[SmartWindows]{SmartWindows-package}
 }
 \examples{
 library(GenomicRanges)
@@ -69,8 +69,8 @@ z <- 0.3 * x - 0.3 * y + 0.4 * rnorm(20)
 d <- GRanges(seqnames="chr1", ranges=IRanges(start=(1:20)*10, width=6), x=x, y=y, z=z)
 
 # normal mode
-PTA(d, adjacencyThreshold=10, cumulativeErrorBound=0.1)
+SmartWindows(d, adjacencyThreshold=10, cumulativeErrorBound=0.1)
 
 # correlation mode
-PTA(d, adjacencyThreshold=10, mode="correlation", correlationBound=0.8)
+SmartWindows(d, adjacencyThreshold=10, mode="correlation", correlationBound=0.8)
 }

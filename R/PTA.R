@@ -10,7 +10,7 @@ extractGRanges <- function(data) {
 }
 
 #' @export
-PTA <- function(start=NULL, end=NULL, scores=NULL, chr=NULL, data=NULL, ...) {
+SmartWindows <- function(start=NULL, end=NULL, scores=NULL, chr=NULL, data=NULL, ...) {
     if (class(data) == "GRanges") {
         data <- extractGRanges(data)
     }
@@ -27,7 +27,7 @@ PTA <- function(start=NULL, end=NULL, scores=NULL, chr=NULL, data=NULL, ...) {
     }
 
     if (is.null(chr) || length(unique(chr)) == 1) {
-        PTA1(start, end, scores, ...)
+        SmartWindows1(start, end, scores, ...)
     } else {
         result <- list(chr=c(),
                        start=c(),
@@ -36,23 +36,23 @@ PTA <- function(start=NULL, end=NULL, scores=NULL, chr=NULL, data=NULL, ...) {
                        coefficients=c(),
                        intercepts=c())
         for (chr1 in sort(unique(chr))) {
-            pta <- PTA1(start[chr == chr1],
+            SmartWindows <- SmartWindows1(start[chr == chr1],
                         end[chr == chr1],
                         scores[chr == chr1, ],
                         ...)
-            result$chr <- c(result$chr, rep(chr1, length(pta$start)))
-            result$start <- c(result$start, pta$start)
-            result$end <- c(result$end, pta$end)
-            result$scores <- rbind(result$scores, pta$scores)
-            result$coefficients <- c(result$coefficients, pta$coefficients)
-            result$intercepts <- c(result$intercepts, pta$intercepts)
+            result$chr <- c(result$chr, rep(chr1, length(SmartWindows$start)))
+            result$start <- c(result$start, SmartWindows$start)
+            result$end <- c(result$end, SmartWindows$end)
+            result$scores <- rbind(result$scores, SmartWindows$scores)
+            result$coefficients <- c(result$coefficients, SmartWindows$coefficients)
+            result$intercepts <- c(result$intercepts, SmartWindows$intercepts)
         }
         result$chr <- factor(result$chr)
         result
     }
 }
 
-PTA1 <- function(start, end, scores,
+SmartWindows1 <- function(start, end, scores,
                  countBound=1, cumulativeErrorBound=Inf,
                  adjacencyThreshold=1, skip=0,
                  mode=c("normal", "correlation", "correlationSpearman"),
@@ -75,7 +75,7 @@ PTA1 <- function(start, end, scores,
 
     arguments <- as.list(environment())
 
-    result <- .Call("PTA", arguments, PACKAGE="PTA")
+    result <- .Call("SmartWindows", arguments, PACKAGE="SmartWindows")
 
     colnames(result$scores) <- colnames(scores)
 
@@ -92,7 +92,7 @@ intersectionAggregate <- function(group, start, end, scores)
     if (is.vector(scores)) { scores <- as.matrix(scores) }
     if (length(start) != nrow(scores)) { stop("Range and score counts differ") }
     arguments <- as.list(environment())
-    result <- .Call("intersectionAggregate", arguments, PACKAGE="PTA")
+    result <- .Call("intersectionAggregate", arguments, PACKAGE="SmartWindows")
     colnames(result$scores) <- colnames(scores)
     result
 }
@@ -117,7 +117,7 @@ spanAggregate <- function(start=NULL, end=NULL, scores=NULL, chr=NULL, data=NULL
     if (is.null(chr) || length(unique(chr)) == 1) {
         r <- .Call("spanAggregate",
                    list(start=start, end=end, scores=scores, span=span),
-                   PACKAGE="PTA")
+                   PACKAGE="SmartWindows")
         colnames(r$scores) <- colnames(scores)
         r
     } else {
@@ -132,7 +132,7 @@ spanAggregate <- function(start=NULL, end=NULL, scores=NULL, chr=NULL, data=NULL
                             end=end[chr == chr1],
                             scores=as.matrix(scores[chr == chr1, ]),
                             span=span),
-                       PACKAGE="PTA")
+                       PACKAGE="SmartWindows")
             result$chr <- c(result$chr, rep(chr1, length(r$start)))
             result$start <- c(result$start, r$start)
             result$end <- c(result$end, r$end)
@@ -144,7 +144,7 @@ spanAggregate <- function(start=NULL, end=NULL, scores=NULL, chr=NULL, data=NULL
 }
 
 #' @export
-applyPTAResult <- function(result,
+applySmartWindowsResult <- function(result,
                            start=NULL, end=NULL, scores=NULL, chr=NULL, data=NULL)
 {
     if (class(data) == "GRanges") {
@@ -163,16 +163,16 @@ applyPTAResult <- function(result,
     }
 
     if (is.null(chr) || length(unique(chr)) == 1) {
-        applyPTAResult1(result, start, end, scores)
+        applySmartWindowsResult1(result, start, end, scores)
     } else {
         outscores <- matrix(nrow=nrow(result$scores), ncol=ncol(scores))
         for (chr1 in sort(unique(chr))) {
-            subpta <- list(
+            subSmartWindows <- list(
                 groups = result$groups[result$chr == chr1],
                 coefficients = result$coefficients[result$chr == chr1],
                 intercept = result$intercept[result$chr == chr1]
             )
-            newscores <- applyPTAResult1(subpta,
+            newscores <- applySmartWindowsResult1(subSmartWindows,
                                          start[chr == chr1],
                                          end[chr == chr1],
                                          scores[chr == chr1, ])
@@ -182,7 +182,7 @@ applyPTAResult <- function(result,
     }
 }
 
-applyPTAResult1 <- function(result, start, end, scores) {
+applySmartWindowsResult1 <- function(result, start, end, scores) {
     stopifnot(length(result$groups) == nrow(scores))
     len <- end - start
     s <- len * if (!is.null(result$coefficients)) {

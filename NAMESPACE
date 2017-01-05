@@ -1,6 +1,6 @@
-export(PTA)
+export(SmartWindows)
 export(adaptRanged)
-export(applyPTAResult)
+export(applySmartWindowsResult)
 export(deoverlap)
 export(deoverlapRanges)
 export(intersectionAggregate)

@@ -1,4 +1,4 @@
 library(testthat)
 library(IRanges)
-library(PTA)
-test_package("PTA")
+library(SmartWindows)
+test_package("SmartWindows")
