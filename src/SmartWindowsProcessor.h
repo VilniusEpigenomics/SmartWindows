@@ -1,14 +1,14 @@
-#ifndef PTA_PTAProcessor_h
-#define PTA_PTAProcessor_h
+#ifndef SmartWindows_SmartWindowsProcessor_h
+#define SmartWindows_SmartWindowsProcessor_h
 #include <Rcpp.h>
 #include <vector>
 #include <cassert>
 
-#define PTA_MODE_NORMAL 0
-#define PTA_MODE_CORRELATION 1
-#define PTA_MODE_CORRELATION_SPEARMAN 2
+#define SmartWindows_MODE_NORMAL 0
+#define SmartWindows_MODE_CORRELATION 1
+#define SmartWindows_MODE_CORRELATION_SPEARMAN 2
 
-class __attribute__((visibility("hidden"))) PTAProcessor {
+class __attribute__((visibility("hidden"))) SmartWindowsProcessor {
     private:
         struct Node {
             int prev;
@@ -21,10 +21,10 @@ class __attribute__((visibility("hidden"))) PTAProcessor {
         };
 
         struct NodeGreater {
-            const PTAProcessor* processor;
+            const SmartWindowsProcessor* processor;
             int heap;
             NodeGreater() : processor(NULL), heap(-1) {}
-            void set(const PTAProcessor* p, int h) {
+            void set(const SmartWindowsProcessor* p, int h) {
                 processor = p;
                 heap = h;
             }
@@ -88,7 +88,7 @@ class __attribute__((visibility("hidden"))) PTAProcessor {
         bool merge(int heap, int node, double *error = NULL);
 
     public:
-        PTAProcessor(const Rcpp::List arguments);
+        SmartWindowsProcessor(const Rcpp::List arguments);
         Rcpp::List run();
 };
 

@@ -1,4 +1,4 @@
-#' @useDynLib PTA
+#' @useDynLib SmartWindows
 
 extractGRanges <- function(data) {
     d <- list()

@@ -2,7 +2,7 @@
 #include <sstream>
 #include <cassert>
 #include <cmath>
-#include "PTAProcessor.h"
+#include "SmartWindowsProcessor.h"
 
 using namespace Rcpp;
 
@@ -99,7 +99,7 @@ static void assert_is_finite(const NumericVector &x, int row) {
 
 /// METHODS
 
-bool PTAProcessor::adjacent(int i, int j) const {
+bool SmartWindowsProcessor::adjacent(int i, int j) const {
     if (i == j) {
         return true;
     }
@@ -115,14 +115,14 @@ bool PTAProcessor::adjacent(int i, int j) const {
     return distance <= adjacency_threshold;
 }
 
-NumericVector PTAProcessor::merged_scores(int i, int j) const {
-    const NumericVector scores_i = const_cast<PTAProcessor*>(this)->scores(i, _);
-    const NumericVector scores_j = const_cast<PTAProcessor*>(this)->scores(j, _);
+NumericVector SmartWindowsProcessor::merged_scores(int i, int j) const {
+    const NumericVector scores_i = const_cast<SmartWindowsProcessor*>(this)->scores(i, _);
+    const NumericVector scores_j = const_cast<SmartWindowsProcessor*>(this)->scores(j, _);
     return (width(i) * scores_i + width(j) * scores_j)
         / (width(i) + width(j));
 }
 
-double PTAProcessor::key(int heap, int nodeid) const {
+double SmartWindowsProcessor::key(int heap, int nodeid) const {
     int previd = nodeid;
     for (int i = -1; i < heap; ++i) {
         if (previd == first_node) return INFINITY;
@@ -139,25 +139,25 @@ double PTAProcessor::key(int heap, int nodeid) const {
     }
 }
 
-int PTAProcessor::parent(int i) const {
+int SmartWindowsProcessor::parent(int i) const {
     return (i - 1)/2;
 }
 
-int PTAProcessor::left_child(int i) const {
+int SmartWindowsProcessor::left_child(int i) const {
     return 2 * i + 1;
 }
 
-int PTAProcessor::right_child(int i) const {
+int SmartWindowsProcessor::right_child(int i) const {
     return 2 * i + 2;
 }
 
-void PTAProcessor::heap_swap(int heap, int i, int j) {
+void SmartWindowsProcessor::heap_swap(int heap, int i, int j) {
     std::swap(heaps[heap][i], heaps[heap][j]);
     nodes[heaps[heap][i]].positions[heap] = i;
     nodes[heaps[heap][j]].positions[heap] = j;
 }
 
-void PTAProcessor::heap_up(int heap, int i) {
+void SmartWindowsProcessor::heap_up(int heap, int i) {
     while (i > 0) {
         int par = parent(i);
         if (greaters[heap](heaps[heap][par], heaps[heap][i])) {
@@ -169,7 +169,7 @@ void PTAProcessor::heap_up(int heap, int i) {
     }
 }
 
-void PTAProcessor::heap_down(int heap, int i) {
+void SmartWindowsProcessor::heap_down(int heap, int i) {
     while (true) {
         int smallest = i;
         int right = right_child(i);
@@ -190,7 +190,7 @@ void PTAProcessor::heap_down(int heap, int i) {
     }
 }
 
-void PTAProcessor::heap_delete(int heap, int i) {
+void SmartWindowsProcessor::heap_delete(int heap, int i) {
     heaps[heap][i] = heaps[heap].back();
     nodes[heaps[heap][i]].positions[heap] = i;
     heaps[heap].pop_back();
@@ -202,14 +202,14 @@ void PTAProcessor::heap_delete(int heap, int i) {
     }
 }
 
-void PTAProcessor::heap_insert(int heap, int nodeid) {
+void SmartWindowsProcessor::heap_insert(int heap, int nodeid) {
     heaps[heap].push_back(nodeid);
     int i = heaps[heap].size() - 1;
     nodes[nodeid].positions[heap] = i;
     heap_up(heap, i);
 }
 
-void PTAProcessor::update_node(int nodeid) {
+void SmartWindowsProcessor::update_node(int nodeid) {
     if (nodeid == -1) return;
     Node& node = nodes[nodeid];
     FOR_EACH_HEAP(heap) {
@@ -219,7 +219,7 @@ void PTAProcessor::update_node(int nodeid) {
     }
 }
 
-bool PTAProcessor::merge(int minheap, int minnode, double *error) {
+bool SmartWindowsProcessor::merge(int minheap, int minnode, double *error) {
     const Node& top = nodes[minnode];
     if (top.keys[minheap] == INFINITY) return false;
 
@@ -244,8 +244,8 @@ bool PTAProcessor::merge(int minheap, int minnode, double *error) {
     if (error) {
         int i = repl.id;
         int j = minnode;
-        const NumericVector diff_i = merged - const_cast<PTAProcessor *>(this)->scores(i, _);
-        const NumericVector diff_j = merged - const_cast<PTAProcessor *>(this)->scores(j, _);
+        const NumericVector diff_i = merged - const_cast<SmartWindowsProcessor *>(this)->scores(i, _);
+        const NumericVector diff_j = merged - const_cast<SmartWindowsProcessor *>(this)->scores(j, _);
         *error = width(i) * sum_sq(diff_i) + width(j) * sum_sq(diff_j);
     }
 
@@ -267,7 +267,7 @@ bool PTAProcessor::merge(int minheap, int minnode, double *error) {
     return true;
 }
 
-PTAProcessor::PTAProcessor(const List arguments) :
+SmartWindowsProcessor::SmartWindowsProcessor(const List arguments) :
     original_start(NumericVector(static_cast<SEXP>(arguments["start"]))),
     original_end(NumericVector(static_cast<SEXP>(arguments["end"]))),
     original_scores(NumericMatrix(static_cast<SEXP>(arguments["scores"]))),
@@ -275,8 +275,8 @@ PTAProcessor::PTAProcessor(const List arguments) :
     cumulative_error_bound(as<double>(arguments["cumulativeErrorBound"])),
     adjacency_threshold(as<double>(arguments["adjacencyThreshold"])),
     mode(as<int>(arguments["mode"])),
-    correlation_mode(as<int>(arguments["mode"]) != PTA_MODE_NORMAL),
-    correlation_spearman(as<int>(arguments["mode"]) == PTA_MODE_CORRELATION_SPEARMAN),
+    correlation_mode(as<int>(arguments["mode"]) != SmartWindows_MODE_NORMAL),
+    correlation_spearman(as<int>(arguments["mode"]) == SmartWindows_MODE_CORRELATION_SPEARMAN),
     correlation_bound(as<double>(arguments["correlationBound"])),
     nheaps(as<int>(arguments["skip"]) + 1)
 {
@@ -286,12 +286,12 @@ PTAProcessor::PTAProcessor(const List arguments) :
     scores = clone(original_scores);
 
     switch (mode) {
-        case PTA_MODE_NORMAL:
-        case PTA_MODE_CORRELATION:
-        case PTA_MODE_CORRELATION_SPEARMAN:
+        case SmartWindows_MODE_NORMAL:
+        case SmartWindows_MODE_CORRELATION:
+        case SmartWindows_MODE_CORRELATION_SPEARMAN:
             break;
         default:
-            throw Rcpp::exception("Bad PTA mode.");
+            throw Rcpp::exception("Bad SmartWindows mode.");
     }
 
     if (cumulative_error_bound == INFINITY) {
@@ -356,20 +356,20 @@ PTAProcessor::PTAProcessor(const List arguments) :
     }
 }
 
-double PTAProcessor::merge_error(int i, int j) const {
+double SmartWindowsProcessor::merge_error(int i, int j) const {
     const NumericVector z = merged_scores(i, j);
-    const NumericVector diff_i = z - const_cast<PTAProcessor *>(this)->scores(i, _);
-    const NumericVector diff_j = z - const_cast<PTAProcessor *>(this)->scores(j, _);
+    const NumericVector diff_i = z - const_cast<SmartWindowsProcessor *>(this)->scores(i, _);
+    const NumericVector diff_j = z - const_cast<SmartWindowsProcessor *>(this)->scores(j, _);
     return width(i) * sum_sq(diff_i) + width(j) * sum_sq(diff_j);
 }
 
-double PTAProcessor::node_correlation(int x, int y) const {
-    const NumericVector scores_x = const_cast<PTAProcessor*>(this)->scores(x, _);
-    const NumericVector scores_y = const_cast<PTAProcessor*>(this)->scores(y, _);
+double SmartWindowsProcessor::node_correlation(int x, int y) const {
+    const NumericVector scores_x = const_cast<SmartWindowsProcessor*>(this)->scores(x, _);
+    const NumericVector scores_y = const_cast<SmartWindowsProcessor*>(this)->scores(y, _);
     return correlation(scores_x, scores_y, correlation_spearman);
 }
 
-List PTAProcessor::run() {
+List SmartWindowsProcessor::run() {
     const double abs_error_bound = cumulative_error_bound * maximum_error;
     double cumulative_error = 0;
     while (node_count > count_bound) {
